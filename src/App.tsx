@@ -1,10 +1,13 @@
+import { Routes, Route } from 'react-router'
+import Home from './pages/Home'
+import Login from './pages/Login'
+
 function App() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <h1 className="text-4xl font-bold text-red-600">
-        Netflix Clone
-      </h1>
-    </div>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+    </Routes>
   )
 }
 
