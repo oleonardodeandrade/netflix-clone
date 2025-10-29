@@ -4,8 +4,10 @@ import { movieService } from '../services'
 import type { Movie } from '../types/movie'
 import { MovieRow } from '../components/movie/MovieRow'
 import { Header } from '../components/header/Header'
+import { HeroSection } from '../components/hero/HeroSection'
 
 export default function Home() {
+  const [heroMovie, setHeroMovie] = useState<Movie | null>(null)
   const [popularMovies, setPopularMovies] = useState<Movie[]>([])
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([])
   const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([])
@@ -29,6 +31,10 @@ export default function Home() {
         setPopularMovies(popular.results)
         setTrendingMovies(trending.results)
         setTopRatedMovies(topRated.results)
+
+        if (popular.results.length > 0) {
+          setHeroMovie(popular.results[0])
+        }
       } catch (err) {
         setError('Failed to load movies')
         console.error('Error fetching movies:', err)
@@ -57,18 +63,19 @@ export default function Home() {
         <Header />
       </SignedIn>
 
-      <main className="pt-20">
+      <main>
         <SignedOut>
-          <div className="text-center mt-20">
+          <div className="text-center pt-40">
             <h2 className="text-5xl font-bold mb-4">Welcome to Netflix Clone</h2>
             <p className="text-gray-400 text-xl mb-8">Sign in to start watching</p>
           </div>
         </SignedOut>
 
         <SignedIn>
-          <div className="space-y-8 py-8">
-            {loading && (
-              <div className="px-8 space-y-8">
+          {loading && (
+            <div className="pt-20">
+              <div className="h-[80vh] bg-gray-800 animate-pulse"></div>
+              <div className="px-8 py-8 space-y-8">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="space-y-2">
                     <div className="h-8 bg-gray-800 rounded w-48 animate-pulse mb-4"></div>
@@ -83,16 +90,20 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {error && (
-              <div className="px-8">
-                <p className="text-red-500">{error}</p>
-              </div>
-            )}
+          {error && (
+            <div className="px-8 pt-20">
+              <p className="text-red-500">{error}</p>
+            </div>
+          )}
 
-            {!loading && !error && (
-              <>
+          {!loading && !error && heroMovie && (
+            <>
+              <HeroSection movie={heroMovie} />
+
+              <div className="space-y-8 py-8 -mt-32 relative z-10">
                 <MovieRow
                   title="Popular no Netflix"
                   movies={popularMovies}
@@ -108,9 +119,9 @@ export default function Home() {
                   movies={topRatedMovies}
                   onMovieClick={(movie) => console.log('Clicked:', movie.title)}
                 />
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </SignedIn>
       </main>
     </div>
