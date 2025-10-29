@@ -5,12 +5,14 @@ import type { Movie } from '../types/movie'
 import { MovieRow } from '../components/movie/MovieRow'
 import { Header } from '../components/header/Header'
 import { HeroSection } from '../components/hero/HeroSection'
+import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
 
 export default function Home() {
   const [heroMovie, setHeroMovie] = useState<Movie | null>(null)
   const [popularMovies, setPopularMovies] = useState<Movie[]>([])
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([])
   const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([])
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const hasFetched = useRef(false)
@@ -107,23 +109,28 @@ export default function Home() {
                 <MovieRow
                   title="Popular no Netflix"
                   movies={popularMovies}
-                  onMovieClick={(movie) => console.log('Clicked:', movie.title)}
+                  onMovieClick={setSelectedMovie}
                 />
                 <MovieRow
                   title="Em Alta"
                   movies={trendingMovies}
-                  onMovieClick={(movie) => console.log('Clicked:', movie.title)}
+                  onMovieClick={setSelectedMovie}
                 />
                 <MovieRow
                   title="Mais Bem Avaliados"
                   movies={topRatedMovies}
-                  onMovieClick={(movie) => console.log('Clicked:', movie.title)}
+                  onMovieClick={setSelectedMovie}
                 />
               </div>
             </>
           )}
         </SignedIn>
       </main>
+
+      <MoviePreviewModal
+        movie={selectedMovie}
+        onClose={() => setSelectedMovie(null)}
+      />
     </div>
   )
 }
