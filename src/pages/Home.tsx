@@ -1,8 +1,9 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
 import { useEffect, useState, useRef } from 'react'
 import { movieService } from '../services'
 import type { Movie } from '../types/movie'
 import { MovieRow } from '../components/movie/MovieRow'
+import { Header } from '../components/header/Header'
 
 export default function Home() {
   const [popularMovies, setPopularMovies] = useState<Movie[]>([])
@@ -41,23 +42,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <header className="flex justify-between items-center p-6">
-        <h1 className="text-3xl font-bold text-red-600">Netflix Clone</h1>
-
-        <SignedOut>
+      <SignedOut>
+        <header className="flex justify-between items-center p-6">
+          <h1 className="text-3xl font-bold text-red-600">Netflix Clone</h1>
           <SignInButton mode="modal">
             <button className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-semibold">
               Sign In
             </button>
           </SignInButton>
-        </SignedOut>
+        </header>
+      </SignedOut>
 
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </header>
+      <SignedIn>
+        <Header />
+      </SignedIn>
 
-      <main className="p-8">
+      <main className="pt-20">
         <SignedOut>
           <div className="text-center mt-20">
             <h2 className="text-5xl font-bold mb-4">Welcome to Netflix Clone</h2>
@@ -66,7 +66,7 @@ export default function Home() {
         </SignedOut>
 
         <SignedIn>
-          <div className="space-y-8">
+          <div className="space-y-8 py-8">
             {loading && (
               <div className="px-8 space-y-8">
                 {[...Array(3)].map((_, i) => (
