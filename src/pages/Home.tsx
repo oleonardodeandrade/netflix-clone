@@ -2,9 +2,12 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-reac
 import { useEffect, useState, useRef } from 'react'
 import { movieService } from '../services'
 import type { Movie } from '../types/movie'
+import { MovieRow } from '../components/movie/MovieRow'
 
 export default function Home() {
-  const [movies, setMovies] = useState<Movie[]>([])
+  const [popularMovies, setPopularMovies] = useState<Movie[]>([])
+  const [trendingMovies, setTrendingMovies] = useState<Movie[]>([])
+  const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const hasFetched = useRef(false)
@@ -17,8 +20,14 @@ export default function Home() {
       setLoading(true)
       setError(null)
       try {
-        const response = await movieService.getPopularMovies()
-        setMovies(response.results)
+        const [popular, trending, topRated] = await Promise.all([
+          movieService.getPopularMovies(),
+          movieService.getTrendingMovies(),
+          movieService.getTopRatedMovies(),
+        ])
+        setPopularMovies(popular.results)
+        setTrendingMovies(trending.results)
+        setTopRatedMovies(topRated.results)
       } catch (err) {
         setError('Failed to load movies')
         console.error('Error fetching movies:', err)
@@ -57,45 +66,49 @@ export default function Home() {
         </SignedOut>
 
         <SignedIn>
-          <div>
-            <h2 className="text-4xl font-bold mb-6">Popular Movies</h2>
-
+          <div className="space-y-8">
             {loading && (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {[...Array(12)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="bg-gray-800 aspect-[2/3] rounded-md"></div>
-                    <div className="mt-2 space-y-2">
-                      <div className="h-4 bg-gray-800 rounded w-3/4"></div>
-                      <div className="h-3 bg-gray-800 rounded w-1/2"></div>
+              <div className="px-8 space-y-8">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-8 bg-gray-800 rounded w-48 animate-pulse mb-4"></div>
+                    <div className="flex gap-2 overflow-hidden">
+                      {[...Array(6)].map((_, j) => (
+                        <div
+                          key={j}
+                          className="min-w-[150px] md:min-w-[200px] bg-gray-800 aspect-[2/3] rounded-md animate-pulse"
+                        ></div>
+                      ))}
                     </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {error && <p className="text-red-500">{error}</p>}
-
-            {!loading && !error && movies.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {movies.slice(0, 12).map((movie) => (
-                  <div key={movie.id} className="group cursor-pointer transition-transform hover:scale-105">
-                    <img
-                      src={movie.posterUrl}
-                      alt={movie.title}
-                      className="w-full rounded-md shadow-lg"
-                    />
-                    <div className="mt-2">
-                      <h3 className="text-sm font-semibold truncate">{movie.title}</h3>
-                      <p className="text-xs text-gray-400">{movie.year} • ⭐ {movie.rating}</p>
-                    </div>
-                  </div>
-                ))}
+            {error && (
+              <div className="px-8">
+                <p className="text-red-500">{error}</p>
               </div>
             )}
 
-            {!loading && !error && movies.length === 0 && (
-              <p className="text-gray-400">No movies found</p>
+            {!loading && !error && (
+              <>
+                <MovieRow
+                  title="Popular no Netflix"
+                  movies={popularMovies}
+                  onMovieClick={(movie) => console.log('Clicked:', movie.title)}
+                />
+                <MovieRow
+                  title="Em Alta"
+                  movies={trendingMovies}
+                  onMovieClick={(movie) => console.log('Clicked:', movie.title)}
+                />
+                <MovieRow
+                  title="Mais Bem Avaliados"
+                  movies={topRatedMovies}
+                  onMovieClick={(movie) => console.log('Clicked:', movie.title)}
+                />
+              </>
             )}
           </div>
         </SignedIn>
