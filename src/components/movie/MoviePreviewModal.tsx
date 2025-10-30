@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
-import type { Movie } from '../../types/movie'
+import { useAtom } from 'jotai'
+import { selectedMovieAtom } from '../../store/movies'
 
-type MoviePreviewModalProps = {
-  movie: Movie | null
-  onClose: () => void
-}
+export function MoviePreviewModal() {
+  const [movie, setMovie] = useAtom(selectedMovieAtom)
 
-export function MoviePreviewModal({ movie, onClose }: MoviePreviewModalProps) {
+  const onClose = () => setMovie(null)
+
   useEffect(() => {
     if (!movie) return
 
@@ -21,7 +21,7 @@ export function MoviePreviewModal({ movie, onClose }: MoviePreviewModalProps) {
       document.removeEventListener('keydown', handleEscape)
       document.body.style.overflow = 'unset'
     }
-  }, [movie, onClose])
+  }, [movie])
 
   if (!movie) return null
 
