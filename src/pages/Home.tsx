@@ -1,5 +1,6 @@
 import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
 import { useEffect, useState, useRef } from 'react'
+import { useSetAtom } from 'jotai'
 import { movieService } from '../services'
 import type { Movie } from '../types/movie'
 import { MovieRow } from '../components/movie/MovieRow'
@@ -7,16 +8,17 @@ import { Header } from '../components/header/Header'
 import { HeroSection } from '../components/hero/HeroSection'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
 import { Footer } from '../components/footer/Footer'
+import { selectedMovieAtom } from '../store/movies'
 
 export default function Home() {
   const [heroMovie, setHeroMovie] = useState<Movie | null>(null)
   const [popularMovies, setPopularMovies] = useState<Movie[]>([])
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([])
   const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([])
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const hasFetched = useRef(false)
+  const setSelectedMovie = useSetAtom(selectedMovieAtom)
 
   useEffect(() => {
     if (hasFetched.current) return
@@ -132,10 +134,7 @@ export default function Home() {
         <Footer />
       </SignedIn>
 
-      <MoviePreviewModal
-        movie={selectedMovie}
-        onClose={() => setSelectedMovie(null)}
-      />
+      <MoviePreviewModal />
     </div>
   )
 }
