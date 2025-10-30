@@ -6,6 +6,7 @@ import { MovieRow } from '../components/movie/MovieRow'
 import { Header } from '../components/header/Header'
 import { HeroSection } from '../components/hero/HeroSection'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
+import { Footer } from '../components/footer/Footer'
 
 export default function Home() {
   const [heroMovie, setHeroMovie] = useState<Movie | null>(null)
@@ -126,6 +127,10 @@ export default function Home() {
           )}
         </SignedIn>
       </main>
+
+      <SignedIn>
+        <Footer />
+      </SignedIn>
 
       <MoviePreviewModal
         movie={selectedMovie}
