@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router'
+import { useAtom } from 'jotai'
+import { searchQueryAtom } from '../../store/ui'
 
 export function SearchBar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useAtom(searchQueryAtom)
   const inputRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -11,10 +15,20 @@ export function SearchBar() {
     }
   }, [isOpen])
 
+  useEffect(() => {
+    if (!query.trim()) return
+
+    const timeoutId = setTimeout(() => {
+      navigate(`/search?q=${encodeURIComponent(query)}`)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [query, navigate])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) {
-      console.log('Search query:', query)
+      navigate(`/search?q=${encodeURIComponent(query)}`)
     }
   }
 
@@ -52,7 +66,7 @@ export function SearchBar() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Títulos, gêneros..."
+            placeholder="Titles, genres..."
             className="w-64 bg-black/70 border border-white/30 text-white px-4 py-2 pl-10 rounded focus:outline-none focus:border-white transition-colors"
           />
           <svg
