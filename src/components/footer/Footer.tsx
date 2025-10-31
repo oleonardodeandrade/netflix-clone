@@ -1,3 +1,5 @@
+import { Link } from 'react-router'
+
 export function Footer() {
   return (
     <footer className="bg-black text-gray-400 px-8 py-12 border-t border-gray-800">
@@ -7,9 +9,9 @@ export function Footer() {
             <h3 className="font-semibold mb-4 text-white">Navigation</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/" className="hover:underline">
+                <Link to="/" className="hover:underline">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="hover:underline">
@@ -22,9 +24,9 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:underline">
+                <Link to="/my-list" className="hover:underline">
                   My List
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
