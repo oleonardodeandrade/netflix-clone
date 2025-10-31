@@ -1,11 +1,19 @@
 import { useEffect } from 'react'
-import { useAtom } from 'jotai'
-import { selectedMovieAtom } from '../../store/movies'
+import { useAtom, useSetAtom } from 'jotai'
+import { selectedMovieAtom, favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
 
 export function MoviePreviewModal() {
   const [movie, setMovie] = useAtom(selectedMovieAtom)
+  const [favorites] = useAtom(favoriteMoviesAtom)
+  const toggleFavorite = useSetAtom(toggleFavoriteAtom)
 
   const onClose = () => setMovie(null)
+
+  const isFavorite = movie ? favorites.some((fav) => fav.id === movie.id) : false
+
+  const handleFavoriteClick = () => {
+    if (movie) toggleFavorite(movie)
+  }
 
   useEffect(() => {
     if (!movie) return
@@ -75,10 +83,18 @@ export function MoviePreviewModal() {
                 <span>Assistir</span>
               </button>
 
-              <button className="w-10 h-10 flex items-center justify-center border-2 border-gray-400 rounded-full hover:border-white transition-colors">
+              <button
+                onClick={handleFavoriteClick}
+                className={`w-10 h-10 flex items-center justify-center border-2 rounded-full transition-colors ${
+                  isFavorite
+                    ? 'border-red-500 bg-red-500/10 hover:bg-red-500/20'
+                    : 'border-gray-400 hover:border-white'
+                }`}
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
                 <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
+                  className={`w-5 h-5 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-white'}`}
+                  fill={isFavorite ? 'currentColor' : 'none'}
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -86,7 +102,7 @@ export function MoviePreviewModal() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 4v16m8-8H4"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                   />
                 </svg>
               </button>
