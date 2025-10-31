@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router'
 import { UserButton } from '@clerk/clerk-react'
 import { SearchBar } from './SearchBar'
 
@@ -22,23 +23,25 @@ export function Header() {
     >
       <div className="flex items-center justify-between px-8 py-4">
         <div className="flex items-center gap-8">
-          <h1 className="text-red-600 text-3xl font-bold cursor-pointer">
-            NETFLIX
-          </h1>
+          <Link to="/">
+            <h1 className="text-red-600 text-3xl font-bold cursor-pointer">
+              NETFLIX
+            </h1>
+          </Link>
 
           <nav className="hidden md:flex gap-6">
-            <a href="/" className="text-white hover:text-gray-300 transition-colors">
-              Início
+            <Link to="/" className="text-white hover:text-gray-300 transition-colors">
+              Home
+            </Link>
+            <a href="#" className="text-white hover:text-gray-300 transition-colors">
+              TV Shows
             </a>
             <a href="#" className="text-white hover:text-gray-300 transition-colors">
-              Séries
+              Movies
             </a>
-            <a href="#" className="text-white hover:text-gray-300 transition-colors">
-              Filmes
-            </a>
-            <a href="#" className="text-white hover:text-gray-300 transition-colors">
-              Minha Lista
-            </a>
+            <Link to="/my-list" className="text-white hover:text-gray-300 transition-colors">
+              My List
+            </Link>
           </nav>
         </div>
 

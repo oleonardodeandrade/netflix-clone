@@ -9,6 +9,7 @@ import { HeroSection } from '../components/hero/HeroSection'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
 import { Footer } from '../components/footer/Footer'
 import { selectedMovieAtom } from '../store/movies'
+import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
 
 export default function Home() {
   const [heroMovie, setHeroMovie] = useState<Movie | null>(null)
@@ -19,6 +20,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const hasFetched = useRef(false)
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
+
+  useFavoritesPersistence()
 
   useEffect(() => {
     if (hasFetched.current) return
