@@ -33,6 +33,16 @@ export class MovieServiceImplementation implements MovieService {
     return mapToMovieWithDetails(response);
   }
 
+  async getMovieById(movieId: string): Promise<Movie | null> {
+    try {
+      const response = await apiClient.getMovieDetails(movieId);
+      return mapToMovieWithDetails(response);
+    } catch (error) {
+      console.error(`Failed to load movie ${movieId}:`, error);
+      return null;
+    }
+  }
+
   async getNowPlayingMovies(page = 1): Promise<PaginatedResponse<Movie>> {
     const response = await apiClient.getNowPlaying(page);
     return mapPaginatedResponse(response, mapToMovie);

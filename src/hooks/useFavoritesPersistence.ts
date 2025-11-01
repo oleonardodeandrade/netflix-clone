@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useUser } from '@clerk/clerk-react'
-import { useAtom, useSetAtom } from 'jotai'
+import { useSetAtom } from 'jotai'
 import { favoriteMoviesAtom } from '../store/movies'
 import { favoritesService } from '../services/api/favoritesService'
 import { movieService } from '../services'
@@ -8,7 +8,7 @@ import type { Movie } from '../types/movie'
 
 export function useFavoritesPersistence() {
   const { user } = useUser()
-  const [favorites, setFavorites] = useAtom(favoriteMoviesAtom)
+  const setFavorites = useSetAtom(favoriteMoviesAtom)
 
   useEffect(() => {
     if (!user?.id) return
