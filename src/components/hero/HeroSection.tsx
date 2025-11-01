@@ -7,20 +7,20 @@ type HeroSectionProps = {
 
 export function HeroSection({ movie }: HeroSectionProps) {
   return (
-    <div className="relative h-[80vh] w-full">
+    <div className="relative h-[60vh] md:h-[80vh] w-full">
       <div className="absolute inset-0">
         <img
           src={movie.backdropUrl}
           alt={movie.title}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
       </div>
 
-      <div className="relative h-full flex items-center px-8 md:px-16">
-        <div className="max-w-2xl space-y-4">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white">
+      <div className="relative h-full flex items-center px-4 md:px-8 lg:px-16">
+        <div className="max-w-2xl space-y-3 md:space-y-4">
+          <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-white">
             {movie.title}
           </h1>
 

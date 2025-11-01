@@ -22,12 +22,12 @@ export function MovieRow({ title, movies, onMovieClick }: MovieRowProps) {
 
   return (
     <div className="space-y-2">
-      <h2 className="text-2xl font-semibold text-white px-8">{title}</h2>
+      <h2 className="text-xl md:text-2xl font-semibold text-white px-4 md:px-8">{title}</h2>
 
-      <div className="group relative px-8">
+      <div className="group relative px-4 md:px-8">
         <button
           onClick={() => scroll('left')}
-          className="absolute left-0 top-0 bottom-0 z-20 w-12 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+          className="hidden md:flex absolute left-0 top-0 bottom-0 z-20 w-12 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center"
           aria-label="Scroll left"
         >
           <svg
@@ -62,7 +62,7 @@ export function MovieRow({ title, movies, onMovieClick }: MovieRowProps) {
 
         <button
           onClick={() => scroll('right')}
-          className="absolute right-0 top-0 bottom-0 z-20 w-12 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+          className="hidden md:flex absolute right-0 top-0 bottom-0 z-20 w-12 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center"
           aria-label="Scroll right"
         >
           <svg
