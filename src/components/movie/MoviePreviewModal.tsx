@@ -1,8 +1,11 @@
 import { useEffect } from 'react'
 import { useAtom, useSetAtom } from 'jotai'
+import { useUser } from '@clerk/clerk-react'
 import { selectedMovieAtom, favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
+import { favoritesService } from '../../services/api/favoritesService'
 
 export function MoviePreviewModal() {
+  const { user } = useUser()
   const [movie, setMovie] = useAtom(selectedMovieAtom)
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useSetAtom(toggleFavoriteAtom)
@@ -11,8 +14,21 @@ export function MoviePreviewModal() {
 
   const isFavorite = movie ? favorites.some((fav) => fav.id === movie.id) : false
 
-  const handleFavoriteClick = () => {
-    if (movie) toggleFavorite(movie)
+  const handleFavoriteClick = async () => {
+    if (!movie || !user?.id) return
+
+    toggleFavorite(movie)
+
+    try {
+      if (isFavorite) {
+        await favoritesService.removeFavorite(user.id, movie.id)
+      } else {
+        await favoritesService.addFavorite(user.id, movie.id)
+      }
+    } catch (error) {
+      console.error('Failed to update favorite:', error)
+      toggleFavorite(movie)
+    }
   }
 
   useEffect(() => {

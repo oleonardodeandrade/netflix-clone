@@ -1,6 +1,8 @@
 import { useAtom, useSetAtom } from 'jotai'
+import { useUser } from '@clerk/clerk-react'
 import type { Movie } from '../../types/movie'
 import { favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
+import { favoritesService } from '../../services/api/favoritesService'
 
 type MovieCardProps = {
   movie: Movie
@@ -8,14 +10,29 @@ type MovieCardProps = {
 }
 
 export function MovieCard({ movie, onClick }: MovieCardProps) {
+  const { user } = useUser()
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useSetAtom(toggleFavoriteAtom)
 
   const isFavorite = favorites.some((fav) => fav.id === movie.id)
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
+
+    if (!user?.id) return
+
     toggleFavorite(movie)
+
+    try {
+      if (isFavorite) {
+        await favoritesService.removeFavorite(user.id, movie.id)
+      } else {
+        await favoritesService.addFavorite(user.id, movie.id)
+      }
+    } catch (error) {
+      console.error('Failed to update favorite:', error)
+      toggleFavorite(movie)
+    }
   }
 
   return (
