@@ -1,18 +1,36 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAtom, useSetAtom } from 'jotai'
 import { useUser } from '@clerk/clerk-react'
 import { selectedMovieAtom, favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
 import { favoritesService } from '../../services/api/favoritesService'
+import { ratingsService } from '../../services/api/ratingsService'
+import { StarRating } from '../rating/StarRating'
 
 export function MoviePreviewModal() {
   const { user } = useUser()
   const [movie, setMovie] = useAtom(selectedMovieAtom)
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useSetAtom(toggleFavoriteAtom)
+  const [userRating, setUserRating] = useState(0)
 
   const onClose = () => setMovie(null)
 
   const isFavorite = movie ? favorites.some((fav) => fav.id === movie.id) : false
+
+  useEffect(() => {
+    if (!movie || !user?.id) return
+
+    const loadRating = async () => {
+      try {
+        const rating = await ratingsService.getRating(user.id, movie.id)
+        setUserRating(rating.rating)
+      } catch (error) {
+        setUserRating(0)
+      }
+    }
+
+    loadRating()
+  }, [movie, user?.id])
 
   const handleFavoriteClick = async () => {
     if (!movie || !user?.id) return
@@ -28,6 +46,19 @@ export function MoviePreviewModal() {
     } catch (error) {
       console.error('Failed to update favorite:', error)
       toggleFavorite(movie)
+    }
+  }
+
+  const handleRatingChange = async (rating: number) => {
+    if (!movie || !user?.id) return
+
+    setUserRating(rating)
+
+    try {
+      await ratingsService.rateMovie(user.id, movie.id, rating)
+    } catch (error) {
+      console.error('Failed to rate movie:', error)
+      setUserRating(0)
     }
   }
 
@@ -156,6 +187,11 @@ export function MoviePreviewModal() {
                   {movie.description}
                 </p>
               )}
+
+              <div className="mt-6">
+                <h3 className="text-sm text-gray-400 mb-2">Sua Avaliação</h3>
+                <StarRating value={userRating} onChange={handleRatingChange} />
+              </div>
             </div>
 
             <div className="space-y-4 text-sm">
