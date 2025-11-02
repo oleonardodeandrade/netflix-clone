@@ -62,6 +62,29 @@ export function MoviePreviewModal() {
     }
   }
 
+  const handleShare = async () => {
+    if (!movie) return
+
+    const shareData = {
+      title: movie.title,
+      text: movie.description || `Check out ${movie.title} on Netflix Clone!`,
+      url: `${window.location.origin}/movie/${movie.id}`,
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData)
+      } else {
+        await navigator.clipboard.writeText(shareData.url)
+        alert('Link copied to clipboard!')
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error sharing:', error)
+      }
+    }
+  }
+
   useEffect(() => {
     if (!movie) return
 
@@ -127,7 +150,7 @@ export function MoviePreviewModal() {
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                <span>Assistir</span>
+                <span>Play</span>
               </button>
 
               <button
@@ -154,7 +177,11 @@ export function MoviePreviewModal() {
                 </svg>
               </button>
 
-              <button className="w-10 h-10 flex items-center justify-center border-2 border-gray-400 rounded-full hover:border-white transition-colors">
+              <button
+                onClick={handleShare}
+                className="w-10 h-10 flex items-center justify-center border-2 border-gray-400 rounded-full hover:border-white transition-colors"
+                aria-label="Share movie"
+              >
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -165,7 +192,7 @@ export function MoviePreviewModal() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                   />
                 </svg>
               </button>
@@ -177,7 +204,7 @@ export function MoviePreviewModal() {
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2 space-y-4">
               <div className="flex items-center gap-4 text-sm text-white/80">
-                <span className="text-green-500 font-semibold">{Math.round(movie.rating * 10)}% relevante</span>
+                <span className="text-green-500 font-semibold">{Math.round(movie.rating * 10)}% Match</span>
                 <span>{movie.year}</span>
                 <span>{movie.duration}</span>
               </div>
@@ -189,7 +216,7 @@ export function MoviePreviewModal() {
               )}
 
               <div className="mt-6">
-                <h3 className="text-sm text-gray-400 mb-2">Sua Avaliação</h3>
+                <h3 className="text-sm text-gray-400 mb-2">Your Rating</h3>
                 <StarRating value={userRating} onChange={handleRatingChange} />
               </div>
             </div>
@@ -197,7 +224,7 @@ export function MoviePreviewModal() {
             <div className="space-y-4 text-sm">
               {movie.cast.length > 0 && (
                 <div>
-                  <span className="text-gray-400">Elenco: </span>
+                  <span className="text-gray-400">Cast: </span>
                   <span className="text-white">
                     {movie.cast.slice(0, 4).map(actor => actor.fullName).join(', ')}
                   </span>
@@ -206,7 +233,7 @@ export function MoviePreviewModal() {
 
               {movie.tags.length > 0 && (
                 <div>
-                  <span className="text-gray-400">Gêneros: </span>
+                  <span className="text-gray-400">Genres: </span>
                   <span className="text-white">{movie.tags.join(', ')}</span>
                 </div>
               )}
