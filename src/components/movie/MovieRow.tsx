@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { memo, useRef } from 'react'
 import type { Movie } from '../../types/movie'
 import { MovieCard } from './MovieCard'
 
@@ -8,7 +8,7 @@ type MovieRowProps = {
   onMovieClick?: (movie: Movie) => void
 }
 
-export function MovieRow({ title, movies, onMovieClick }: MovieRowProps) {
+export const MovieRow = memo(function MovieRow({ title, movies, onMovieClick }: MovieRowProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const scroll = (direction: 'left' | 'right') => {
@@ -82,4 +82,4 @@ export function MovieRow({ title, movies, onMovieClick }: MovieRowProps) {
       </div>
     </div>
   )
-}
+})
