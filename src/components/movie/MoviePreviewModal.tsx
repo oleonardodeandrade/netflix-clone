@@ -239,6 +239,47 @@ export function MoviePreviewModal() {
               )}
             </div>
           </div>
+
+          {movie.episodes && movie.episodes.length > 0 && (
+            <div className="p-8 pt-0">
+              <h3 className="text-2xl font-bold mb-4">Episodes</h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {movie.episodes.map((episode) => (
+                  <div
+                    key={episode.id}
+                    className="bg-gray-800/50 rounded p-4 hover:bg-gray-800 transition-colors cursor-pointer"
+                  >
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-32 h-18 bg-gray-700 rounded overflow-hidden">
+                        {episode.previewUrl && (
+                          <img
+                            src={episode.previewUrl}
+                            alt={episode.title}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-semibold">
+                            {episode.episodeNumber}. {episode.title}
+                          </h4>
+                          <span className="text-sm text-gray-400">
+                            S{episode.seasonNumber}:E{episode.episodeNumber}
+                          </span>
+                        </div>
+                        {episode.description && (
+                          <p className="text-sm text-gray-400 line-clamp-2">
+                            {episode.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
