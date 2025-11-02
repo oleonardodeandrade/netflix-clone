@@ -1,17 +1,21 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router'
-import Home from './pages/Home'
-import Login from './pages/Login'
-import MyList from './pages/MyList'
-import SearchResults from './pages/SearchResults'
+
+const Home = lazy(() => import('./pages/Home'))
+const Login = lazy(() => import('./pages/Login'))
+const MyList = lazy(() => import('./pages/MyList'))
+const SearchResults = lazy(() => import('./pages/SearchResults'))
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/my-list" element={<MyList />} />
-      <Route path="/search" element={<SearchResults />} />
-    </Routes>
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/my-list" element={<MyList />} />
+        <Route path="/search" element={<SearchResults />} />
+      </Routes>
+    </Suspense>
   )
 }
 
