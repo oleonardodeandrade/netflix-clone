@@ -147,23 +147,23 @@ export default function Home() {
               <div className="space-y-8 py-8 -mt-32 relative z-10">
                 {continueWatching.length > 0 && (
                   <MovieRow
-                    title="Continuar Assistindo"
+                    title="Continue Watching"
                     movies={continueWatching}
                     onMovieClick={setSelectedMovie}
                   />
                 )}
                 <MovieRow
-                  title="Popular no Netflix"
+                  title="Popular on Netflix"
                   movies={popularMovies}
                   onMovieClick={setSelectedMovie}
                 />
                 <MovieRow
-                  title="Em Alta"
+                  title="Trending Now"
                   movies={trendingMovies}
                   onMovieClick={setSelectedMovie}
                 />
                 <MovieRow
-                  title="Mais Bem Avaliados"
+                  title="Top Rated"
                   movies={topRatedMovies}
                   onMovieClick={setSelectedMovie}
                 />
