@@ -1,6 +1,6 @@
-import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, SignInButton, useUser } from '@clerk/clerk-react'
 import { useEffect, useState, useRef } from 'react'
-import { useSetAtom } from 'jotai'
+import { useSetAtom, useAtom } from 'jotai'
 import { movieService } from '../services'
 import type { Movie } from '../types/movie'
 import { MovieRow } from '../components/movie/MovieRow'
@@ -10,18 +10,24 @@ import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
 import { Footer } from '../components/footer/Footer'
 import { selectedMovieAtom } from '../store/movies'
 import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
+import { useWatchHistoryPersistence } from '../hooks/useWatchHistoryPersistence'
+import { watchHistoryAtom } from '../store/watchHistory'
 
 export default function Home() {
+  const { user } = useUser()
   const [heroMovie, setHeroMovie] = useState<Movie | null>(null)
   const [popularMovies, setPopularMovies] = useState<Movie[]>([])
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([])
   const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([])
+  const [continueWatching, setContinueWatching] = useState<Movie[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const hasFetched = useRef(false)
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
+  const [watchHistory] = useAtom(watchHistoryAtom)
 
   useFavoritesPersistence()
+  useWatchHistoryPersistence()
 
   useEffect(() => {
     if (hasFetched.current) return
@@ -53,6 +59,33 @@ export default function Home() {
 
     fetchMovies()
   }, [])
+
+  useEffect(() => {
+    if (!user?.id || watchHistory.length === 0) {
+      setContinueWatching([])
+      return
+    }
+
+    const loadContinueWatching = async () => {
+      try {
+        const incompleteHistory = watchHistory
+          .filter((item) => !item.completed && item.progress > 0)
+          .sort((a, b) => new Date(b.watchedAt).getTime() - new Date(a.watchedAt).getTime())
+          .slice(0, 10)
+
+        const moviePromises = incompleteHistory.map((item) =>
+          movieService.getMovieById(item.movieId)
+        )
+
+        const movies = await Promise.all(moviePromises)
+        setContinueWatching(movies.filter((movie): movie is Movie => movie !== null))
+      } catch (error) {
+        console.error('Failed to load continue watching:', error)
+      }
+    }
+
+    loadContinueWatching()
+  }, [watchHistory, user?.id])
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -112,18 +145,25 @@ export default function Home() {
               <HeroSection movie={heroMovie} />
 
               <div className="space-y-8 py-8 -mt-32 relative z-10">
+                {continueWatching.length > 0 && (
+                  <MovieRow
+                    title="Continue Watching"
+                    movies={continueWatching}
+                    onMovieClick={setSelectedMovie}
+                  />
+                )}
                 <MovieRow
-                  title="Popular no Netflix"
+                  title="Popular on Netflix"
                   movies={popularMovies}
                   onMovieClick={setSelectedMovie}
                 />
                 <MovieRow
-                  title="Em Alta"
+                  title="Trending Now"
                   movies={trendingMovies}
                   onMovieClick={setSelectedMovie}
                 />
                 <MovieRow
-                  title="Mais Bem Avaliados"
+                  title="Top Rated"
                   movies={topRatedMovies}
                   onMovieClick={setSelectedMovie}
                 />

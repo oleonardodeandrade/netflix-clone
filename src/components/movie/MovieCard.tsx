@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useAtom, useSetAtom } from 'jotai'
 import { useUser } from '@clerk/clerk-react'
 import type { Movie } from '../../types/movie'
@@ -9,7 +10,7 @@ type MovieCardProps = {
   onClick?: (movie: Movie) => void
 }
 
-export function MovieCard({ movie, onClick }: MovieCardProps) {
+export const MovieCard = memo(function MovieCard({ movie, onClick }: MovieCardProps) {
   const { user } = useUser()
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useSetAtom(toggleFavoriteAtom)
@@ -83,4 +84,4 @@ export function MovieCard({ movie, onClick }: MovieCardProps) {
       </div>
     </div>
   )
-}
+})

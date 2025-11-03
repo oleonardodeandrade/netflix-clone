@@ -10,10 +10,20 @@ import { MovieCard } from '../components/movie/MovieCard'
 import { selectedMovieAtom } from '../store/movies'
 import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
 
+type SearchResults = {
+  exact: Movie[]
+  similar: Movie[]
+  others: Movie[]
+}
+
 export default function SearchResults() {
   const [searchParams] = useSearchParams()
   const query = searchParams.get('q') || ''
-  const [movies, setMovies] = useState<Movie[]>([])
+  const [searchResults, setSearchResults] = useState<SearchResults>({
+    exact: [],
+    similar: [],
+    others: [],
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
@@ -22,7 +32,7 @@ export default function SearchResults() {
 
   useEffect(() => {
     if (!query.trim()) {
-      setMovies([])
+      setSearchResults({ exact: [], similar: [], others: [] })
       return
     }
 
@@ -30,8 +40,19 @@ export default function SearchResults() {
       setLoading(true)
       setError(null)
       try {
-        const response = await movieService.searchMovies(query)
-        setMovies(response.results)
+        const exactResults = await movieService.searchMovies(query)
+
+        const similarResults = exactResults.results.length > 0
+          ? await movieService.getTopRatedMovies()
+          : await movieService.getTrendingMovies()
+
+        const otherResults = await movieService.getPopularMovies()
+
+        setSearchResults({
+          exact: exactResults.results.slice(0, 4),
+          similar: similarResults.results.slice(0, 4),
+          others: otherResults.results.slice(0, 4),
+        })
       } catch (err) {
         setError('Failed to search movies')
         console.error('Error searching movies:', err)
@@ -72,7 +93,7 @@ export default function SearchResults() {
             </div>
           )}
 
-          {!loading && !error && movies.length === 0 && query && (
+          {!loading && !error && searchResults.exact.length === 0 && searchResults.similar.length === 0 && searchResults.others.length === 0 && query && (
             <div className="text-center py-20">
               <svg
                 className="w-20 h-20 mx-auto mb-4 text-gray-600"
@@ -96,21 +117,53 @@ export default function SearchResults() {
             </div>
           )}
 
-          {!loading && !error && movies.length > 0 && (
-            <>
-              <p className="text-gray-400 mb-6">
-                Found {movies.length} {movies.length === 1 ? 'result' : 'results'}
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {movies.map((movie) => (
-                  <MovieCard
-                    key={movie.id}
-                    movie={movie}
-                    onClick={setSelectedMovie}
-                  />
-                ))}
-              </div>
-            </>
+          {!loading && !error && (searchResults.exact.length > 0 || searchResults.similar.length > 0 || searchResults.others.length > 0) && (
+            <div className="space-y-12">
+              {searchResults.exact.length > 0 && (
+                <section>
+                  <h2 className="text-2xl font-bold mb-6">Exact Matches</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {searchResults.exact.map((movie) => (
+                      <MovieCard
+                        key={movie.id}
+                        movie={movie}
+                        onClick={setSelectedMovie}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {searchResults.similar.length > 0 && (
+                <section>
+                  <h2 className="text-2xl font-bold mb-6">Similar Titles</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {searchResults.similar.map((movie) => (
+                      <MovieCard
+                        key={movie.id}
+                        movie={movie}
+                        onClick={setSelectedMovie}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {searchResults.others.length > 0 && (
+                <section>
+                  <h2 className="text-2xl font-bold mb-6">Other Titles</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {searchResults.others.map((movie) => (
+                      <MovieCard
+                        key={movie.id}
+                        movie={movie}
+                        onClick={setSelectedMovie}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
           )}
         </div>
       </main>

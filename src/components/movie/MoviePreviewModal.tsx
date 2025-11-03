@@ -1,18 +1,36 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAtom, useSetAtom } from 'jotai'
 import { useUser } from '@clerk/clerk-react'
 import { selectedMovieAtom, favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
 import { favoritesService } from '../../services/api/favoritesService'
+import { ratingsService } from '../../services/api/ratingsService'
+import { StarRating } from '../rating/StarRating'
 
 export function MoviePreviewModal() {
   const { user } = useUser()
   const [movie, setMovie] = useAtom(selectedMovieAtom)
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useSetAtom(toggleFavoriteAtom)
+  const [userRating, setUserRating] = useState(0)
 
   const onClose = () => setMovie(null)
 
   const isFavorite = movie ? favorites.some((fav) => fav.id === movie.id) : false
+
+  useEffect(() => {
+    if (!movie || !user?.id) return
+
+    const loadRating = async () => {
+      try {
+        const rating = await ratingsService.getRating(user.id, movie.id)
+        setUserRating(rating.rating)
+      } catch (error) {
+        setUserRating(0)
+      }
+    }
+
+    loadRating()
+  }, [movie, user?.id])
 
   const handleFavoriteClick = async () => {
     if (!movie || !user?.id) return
@@ -28,6 +46,42 @@ export function MoviePreviewModal() {
     } catch (error) {
       console.error('Failed to update favorite:', error)
       toggleFavorite(movie)
+    }
+  }
+
+  const handleRatingChange = async (rating: number) => {
+    if (!movie || !user?.id) return
+
+    setUserRating(rating)
+
+    try {
+      await ratingsService.rateMovie(user.id, movie.id, rating)
+    } catch (error) {
+      console.error('Failed to rate movie:', error)
+      setUserRating(0)
+    }
+  }
+
+  const handleShare = async () => {
+    if (!movie) return
+
+    const shareData = {
+      title: movie.title,
+      text: movie.description || `Check out ${movie.title} on Netflix Clone!`,
+      url: `${window.location.origin}/movie/${movie.id}`,
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData)
+      } else {
+        await navigator.clipboard.writeText(shareData.url)
+        alert('Link copied to clipboard!')
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error sharing:', error)
+      }
     }
   }
 
@@ -96,7 +150,7 @@ export function MoviePreviewModal() {
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                <span>Assistir</span>
+                <span>Play</span>
               </button>
 
               <button
@@ -123,7 +177,11 @@ export function MoviePreviewModal() {
                 </svg>
               </button>
 
-              <button className="w-10 h-10 flex items-center justify-center border-2 border-gray-400 rounded-full hover:border-white transition-colors">
+              <button
+                onClick={handleShare}
+                className="w-10 h-10 flex items-center justify-center border-2 border-gray-400 rounded-full hover:border-white transition-colors"
+                aria-label="Share movie"
+              >
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -134,7 +192,7 @@ export function MoviePreviewModal() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                   />
                 </svg>
               </button>
@@ -146,7 +204,7 @@ export function MoviePreviewModal() {
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2 space-y-4">
               <div className="flex items-center gap-4 text-sm text-white/80">
-                <span className="text-green-500 font-semibold">{Math.round(movie.rating * 10)}% relevante</span>
+                <span className="text-green-500 font-semibold">{Math.round(movie.rating * 10)}% Match</span>
                 <span>{movie.year}</span>
                 <span>{movie.duration}</span>
               </div>
@@ -156,12 +214,17 @@ export function MoviePreviewModal() {
                   {movie.description}
                 </p>
               )}
+
+              <div className="mt-6">
+                <h3 className="text-sm text-gray-400 mb-2">Your Rating</h3>
+                <StarRating value={userRating} onChange={handleRatingChange} />
+              </div>
             </div>
 
             <div className="space-y-4 text-sm">
               {movie.cast.length > 0 && (
                 <div>
-                  <span className="text-gray-400">Elenco: </span>
+                  <span className="text-gray-400">Cast: </span>
                   <span className="text-white">
                     {movie.cast.slice(0, 4).map(actor => actor.fullName).join(', ')}
                   </span>
@@ -170,12 +233,53 @@ export function MoviePreviewModal() {
 
               {movie.tags.length > 0 && (
                 <div>
-                  <span className="text-gray-400">Gêneros: </span>
+                  <span className="text-gray-400">Genres: </span>
                   <span className="text-white">{movie.tags.join(', ')}</span>
                 </div>
               )}
             </div>
           </div>
+
+          {movie.episodes && movie.episodes.length > 0 && (
+            <div className="p-8 pt-0">
+              <h3 className="text-2xl font-bold mb-4">Episodes</h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {movie.episodes.map((episode) => (
+                  <div
+                    key={episode.id}
+                    className="bg-gray-800/50 rounded p-4 hover:bg-gray-800 transition-colors cursor-pointer"
+                  >
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-32 h-18 bg-gray-700 rounded overflow-hidden">
+                        {episode.previewUrl && (
+                          <img
+                            src={episode.previewUrl}
+                            alt={episode.title}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-semibold">
+                            {episode.episodeNumber}. {episode.title}
+                          </h4>
+                          <span className="text-sm text-gray-400">
+                            S{episode.seasonNumber}:E{episode.episodeNumber}
+                          </span>
+                        </div>
+                        {episode.description && (
+                          <p className="text-sm text-gray-400 line-clamp-2">
+                            {episode.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
