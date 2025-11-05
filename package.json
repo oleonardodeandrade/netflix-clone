@@ -14,7 +14,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "postinstall": "prisma generate"
+    "postinstall": "bash scripts/postinstall.sh"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.53.3",
