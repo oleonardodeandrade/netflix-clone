@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
-import { useSetAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import { UserButton } from '@clerk/clerk-react'
 import { SearchBar } from './SearchBar'
 import { MobileMenu } from './MobileMenu'
 import { isMobileMenuOpenAtom } from '../../store/ui'
+import { selectedGenreAtom } from '../../store/movies'
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false)
   const setMobileMenuOpen = useSetAtom(isMobileMenuOpenAtom)
+  const [selectedGenre, setSelectedGenre] = useAtom(selectedGenreAtom)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,20 +56,44 @@ export function Header() {
               </h1>
             </Link>
 
-            <nav className="hidden md:flex gap-6">
-              <Link to="/" className="text-white hover:text-gray-300 transition-colors">
-                Home
-              </Link>
-              <a href="#" className="text-white hover:text-gray-300 transition-colors">
-                TV Shows
-              </a>
-              <a href="#" className="text-white hover:text-gray-300 transition-colors">
-                Movies
-              </a>
-              <Link to="/my-list" className="text-white hover:text-gray-300 transition-colors">
+            <div className="hidden md:flex items-center gap-4">
+              <button
+                onClick={() => setSelectedGenre('all')}
+                className={`transition-colors text-sm font-medium cursor-pointer ${
+                  selectedGenre === 'all' ? 'text-white' : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setSelectedGenre('action')}
+                className={`transition-colors text-sm font-medium cursor-pointer ${
+                  selectedGenre === 'action' ? 'text-white' : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Action
+              </button>
+              <button
+                onClick={() => setSelectedGenre('comedy')}
+                className={`transition-colors text-sm font-medium cursor-pointer ${
+                  selectedGenre === 'comedy' ? 'text-white' : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Comedy
+              </button>
+              <button
+                onClick={() => setSelectedGenre('drama')}
+                className={`transition-colors text-sm font-medium cursor-pointer ${
+                  selectedGenre === 'drama' ? 'text-white' : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Drama
+              </button>
+
+              <Link to="/my-list" className="text-white hover:text-gray-300 transition-colors text-sm font-medium cursor-pointer">
                 My List
               </Link>
-            </nav>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
