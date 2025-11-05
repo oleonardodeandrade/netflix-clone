@@ -7,6 +7,8 @@ export const favoriteMoviesAtom = atom<Movie[]>([])
 
 export const userIdAtom = atom<string | null>(null)
 
+export const selectedGenreAtom = atom<string>('all')
+
 export const isFavoriteAtom = atom(
   (get) => {
     const favorites = get(favoriteMoviesAtom)
