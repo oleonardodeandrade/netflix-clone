@@ -26,7 +26,7 @@ export function HeroActions({ movie }: HeroActionsProps) {
         >
           <path d="M8 5v14l11-7z" />
         </svg>
-        <span className="text-sm md:text-base">Assistir</span>
+        <span className="text-sm md:text-base">Play</span>
       </button>
 
       <button
@@ -46,7 +46,7 @@ export function HeroActions({ movie }: HeroActionsProps) {
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <span className="text-sm md:text-base">Mais Informações</span>
+        <span className="text-sm md:text-base">More Info</span>
       </button>
     </div>
   )
