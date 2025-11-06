@@ -1,16 +1,20 @@
+import { useSetAtom } from 'jotai'
 import type { Movie } from '../../types/movie'
+import { selectedMovieAtom } from '../../store/movies'
 
 type HeroActionsProps = {
   movie: Movie
 }
 
 export function HeroActions({ movie }: HeroActionsProps) {
+  const setSelectedMovie = useSetAtom(selectedMovieAtom)
+
   const handlePlay = () => {
     console.log('Play movie:', movie.title)
   }
 
   const handleMoreInfo = () => {
-    console.log('More info:', movie.title)
+    setSelectedMovie(movie)
   }
 
   return (
