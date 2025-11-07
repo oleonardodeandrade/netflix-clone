@@ -6,6 +6,9 @@ type HeroSectionProps = {
 }
 
 export function HeroSection({ movie }: HeroSectionProps) {
+  const hasVideoUrl = movie.previewUrl && movie.previewUrl.includes('youtube')
+  const videoId = hasVideoUrl ? movie.previewUrl.split('v=')[1]?.split('&')[0] : null
+
   return (
     <div className="relative h-[60vh] md:h-[80vh] w-full bg-black">
       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
@@ -22,17 +25,22 @@ export function HeroSection({ movie }: HeroSectionProps) {
 
           <div className="hidden lg:block">
             <div className="relative aspect-video rounded-lg overflow-hidden shadow-2xl">
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover"
-                poster={movie.backdropUrl}
-              >
-                <source src={movie.backdropUrl} type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              {videoId ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&modestbranding=1&playlist=${videoId}`}
+                  className="w-full h-full"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                  title={movie.title}
+                />
+              ) : (
+                <img
+                  src={movie.backdropUrl}
+                  alt={movie.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
             </div>
           </div>
         </div>
