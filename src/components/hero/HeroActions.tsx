@@ -10,7 +10,7 @@ export function HeroActions({ movie }: HeroActionsProps) {
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
 
   const handlePlay = () => {
-    console.log('Play movie:', movie.title)
+    setSelectedMovie(movie)
   }
 
   const handleMoreInfo = () => {
