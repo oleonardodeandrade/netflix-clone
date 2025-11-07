@@ -1,4 +1,5 @@
 import { useSetAtom } from 'jotai'
+import { useNavigate } from 'react-router'
 import type { Movie } from '../../types/movie'
 import { selectedMovieAtom } from '../../store/movies'
 
@@ -8,9 +9,10 @@ type HeroActionsProps = {
 
 export function HeroActions({ movie }: HeroActionsProps) {
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
+  const navigate = useNavigate()
 
   const handlePlay = () => {
-    setSelectedMovie(movie)
+    navigate(`/watch/${movie.id}`)
   }
 
   const handleMoreInfo = () => {
