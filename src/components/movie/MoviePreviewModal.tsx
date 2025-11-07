@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAtom, useSetAtom } from 'jotai'
+import { useNavigate } from 'react-router'
 import { useUser } from '@clerk/clerk-react'
 import { selectedMovieAtom, favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
 import { favoritesService } from '../../services/api/favoritesService'
@@ -8,12 +9,18 @@ import { StarRating } from '../rating/StarRating'
 
 export function MoviePreviewModal() {
   const { user } = useUser()
+  const navigate = useNavigate()
   const [movie, setMovie] = useAtom(selectedMovieAtom)
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useSetAtom(toggleFavoriteAtom)
   const [userRating, setUserRating] = useState(0)
 
   const onClose = () => setMovie(null)
+
+  const handlePlay = () => {
+    if (!movie) return
+    navigate(`/watch/${movie.id}`)
+  }
 
   const isFavorite = movie ? favorites.some((fav) => fav.id === movie.id) : false
 
@@ -146,7 +153,10 @@ export function MoviePreviewModal() {
             <h2 className="text-4xl font-bold text-white mb-4">{movie.title}</h2>
 
             <div className="flex gap-4">
-              <button className="flex items-center gap-2 bg-white text-black px-6 py-2 rounded font-semibold hover:bg-white/90 transition-colors">
+              <button
+                onClick={handlePlay}
+                className="flex items-center gap-2 bg-white text-black px-6 py-2 rounded font-semibold hover:bg-white/90 transition-colors"
+              >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
