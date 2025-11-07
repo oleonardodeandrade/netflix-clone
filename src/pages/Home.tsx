@@ -60,7 +60,8 @@ export default function Home() {
         setTopRatedMovies(topRated.results)
 
         if (popular.results.length > 0) {
-          setHeroMovie(popular.results[0])
+          const heroMovieDetails = await movieService.getMovieDetails(popular.results[0].id)
+          setHeroMovie(heroMovieDetails)
         }
       } catch (err) {
         setError('Failed to load movies')
