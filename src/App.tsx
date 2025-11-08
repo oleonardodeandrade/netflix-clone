@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router'
 const Home = lazy(() => import('./pages/Home'))
 const Login = lazy(() => import('./pages/Login'))
 const Movies = lazy(() => import('./pages/Movies'))
+const TvShows = lazy(() => import('./pages/TvShows'))
 const MyList = lazy(() => import('./pages/MyList'))
 const SearchResults = lazy(() => import('./pages/SearchResults'))
 const Watch = lazy(() => import('./pages/Watch'))
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/movies" element={<Movies />} />
+        <Route path="/tv-shows" element={<TvShows />} />
         <Route path="/my-list" element={<MyList />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/watch/:id" element={<Watch />} />
