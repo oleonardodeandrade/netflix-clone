@@ -2,7 +2,6 @@ import { useNavigate, useParams } from 'react-router'
 import { useEffect, useState } from 'react'
 import { movieService } from '../services'
 import type { Movie } from '../types/movie'
-import { VideoPlayer } from '../components/video/VideoPlayer'
 
 export default function Watch() {
   const { id } = useParams<{ id: string }>()
