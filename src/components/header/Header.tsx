@@ -57,6 +57,14 @@ export function Header() {
             </Link>
 
             <div className="hidden md:flex items-center gap-4">
+              <Link to="/" className="text-white hover:text-gray-300 transition-colors text-sm font-medium cursor-pointer">
+                Home
+              </Link>
+
+              <Link to="/movies" className="text-white hover:text-gray-300 transition-colors text-sm font-medium cursor-pointer">
+                Movies
+              </Link>
+
               <button
                 onClick={() => setSelectedGenre('all')}
                 className={`transition-colors text-sm font-medium cursor-pointer ${
