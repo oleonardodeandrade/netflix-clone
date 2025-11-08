@@ -21,17 +21,19 @@ export const MovieRow = memo(function MovieRow({ title, movies, onMovieClick }: 
   if (movies.length === 0) return null
 
   return (
-    <div className="space-y-2">
-      <h2 className="text-xl md:text-2xl font-semibold text-white px-4 md:px-8">{title}</h2>
+    <div className="space-y-3 mb-8">
+      <h2 className="text-xl md:text-2xl font-bold text-white px-4 md:px-8 hover:text-gray-300 transition-colors cursor-default">
+        {title}
+      </h2>
 
       <div className="group relative px-4 md:px-8">
         <button
           onClick={() => scroll('left')}
-          className="hidden md:flex absolute left-0 top-0 bottom-0 z-20 w-12 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center"
+          className="hidden md:flex absolute left-0 top-0 bottom-0 z-30 w-14 bg-black/60 hover:bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 items-center justify-center backdrop-blur-sm"
           aria-label="Scroll left"
         >
           <svg
-            className="w-8 h-8 text-white"
+            className="w-10 h-10 text-white drop-shadow-lg"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -39,7 +41,7 @@ export const MovieRow = memo(function MovieRow({ title, movies, onMovieClick }: 
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={2.5}
               d="M15 19l-7-7 7-7"
             />
           </svg>
@@ -47,14 +49,14 @@ export const MovieRow = memo(function MovieRow({ title, movies, onMovieClick }: 
 
         <div
           ref={scrollRef}
-          className="flex gap-2 overflow-x-scroll scrollbar-hide scroll-smooth"
+          className="flex gap-2 md:gap-3 overflow-x-scroll scrollbar-hide scroll-smooth py-4 md:py-6 -my-4 md:-my-6"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
           }}
         >
           {movies.map((movie) => (
-            <div key={movie.id} className="min-w-[150px] md:min-w-[200px]">
+            <div key={movie.id} className="min-w-[150px] md:min-w-[220px] flex-shrink-0">
               <MovieCard movie={movie} onClick={onMovieClick} />
             </div>
           ))}
@@ -62,11 +64,11 @@ export const MovieRow = memo(function MovieRow({ title, movies, onMovieClick }: 
 
         <button
           onClick={() => scroll('right')}
-          className="hidden md:flex absolute right-0 top-0 bottom-0 z-20 w-12 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center"
+          className="hidden md:flex absolute right-0 top-0 bottom-0 z-30 w-14 bg-black/60 hover:bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 items-center justify-center backdrop-blur-sm"
           aria-label="Scroll right"
         >
           <svg
-            className="w-8 h-8 text-white"
+            className="w-10 h-10 text-white drop-shadow-lg"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -74,7 +76,7 @@ export const MovieRow = memo(function MovieRow({ title, movies, onMovieClick }: 
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={2.5}
               d="M9 5l7 7-7 7"
             />
           </svg>

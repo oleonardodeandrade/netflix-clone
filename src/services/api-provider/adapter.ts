@@ -70,11 +70,14 @@ export const mapToMovieWithDetails = (apiDetails: ApiMovieDetails): Movie => {
     ? apiDetails.genres.map(g => g.name.toLowerCase())
     : baseMovie.tags;
 
+  const trailerUrl = getTrailerUrl(apiDetails);
+
   return {
     ...baseMovie,
     cast,
     duration: runtime,
     tags,
+    previewUrl: trailerUrl || baseMovie.previewUrl,
   };
 };
 
