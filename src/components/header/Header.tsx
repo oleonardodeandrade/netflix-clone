@@ -65,6 +65,10 @@ export function Header() {
                 Movies
               </Link>
 
+              <Link to="/tv-shows" className="text-white hover:text-gray-300 transition-colors text-sm font-medium cursor-pointer">
+                TV Shows
+              </Link>
+
               <button
                 onClick={() => setSelectedGenre('all')}
                 className={`transition-colors text-sm font-medium cursor-pointer ${
