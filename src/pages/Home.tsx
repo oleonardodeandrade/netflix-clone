@@ -1,5 +1,5 @@
 import { SignedIn, SignedOut, SignInButton, useUser } from '@clerk/clerk-react'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useSetAtom, useAtom } from 'jotai'
 import { movieService } from '../services'
 import type { Movie } from '../types/movie'
@@ -8,7 +8,7 @@ import { Header } from '../components/header/Header'
 import { HeroSection } from '../components/hero/HeroSection'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
 import { Footer } from '../components/footer/Footer'
-import { selectedMovieAtom } from '../store/movies'
+import { selectedMovieAtom, selectedGenreAtom } from '../store/movies'
 import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
 import { useWatchHistoryPersistence } from '../hooks/useWatchHistoryPersistence'
 import { watchHistoryAtom } from '../store/watchHistory'
@@ -25,9 +25,22 @@ export default function Home() {
   const hasFetched = useRef(false)
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
   const [watchHistory] = useAtom(watchHistoryAtom)
+  const [selectedGenre] = useAtom(selectedGenreAtom)
 
   useFavoritesPersistence()
   useWatchHistoryPersistence()
+
+  const filterByGenre = (movies: Movie[]) => {
+    if (selectedGenre === 'all') return movies
+    return movies.filter((movie) =>
+      movie.tags.some((tag) => tag.toLowerCase() === selectedGenre.toLowerCase())
+    )
+  }
+
+  const filteredPopularMovies = useMemo(() => filterByGenre(popularMovies), [popularMovies, selectedGenre])
+  const filteredTrendingMovies = useMemo(() => filterByGenre(trendingMovies), [trendingMovies, selectedGenre])
+  const filteredTopRatedMovies = useMemo(() => filterByGenre(topRatedMovies), [topRatedMovies, selectedGenre])
+  const filteredContinueWatching = useMemo(() => filterByGenre(continueWatching), [continueWatching, selectedGenre])
 
   useEffect(() => {
     if (hasFetched.current) return
@@ -47,7 +60,8 @@ export default function Home() {
         setTopRatedMovies(topRated.results)
 
         if (popular.results.length > 0) {
-          setHeroMovie(popular.results[0])
+          const heroMovieDetails = await movieService.getMovieDetails(popular.results[0].id)
+          setHeroMovie(heroMovieDetails)
         }
       } catch (err) {
         setError('Failed to load movies')
@@ -145,26 +159,26 @@ export default function Home() {
               <HeroSection movie={heroMovie} />
 
               <div className="space-y-8 py-8 -mt-32 relative z-10">
-                {continueWatching.length > 0 && (
+                {filteredContinueWatching.length > 0 && (
                   <MovieRow
                     title="Continue Watching"
-                    movies={continueWatching}
+                    movies={filteredContinueWatching}
                     onMovieClick={setSelectedMovie}
                   />
                 )}
                 <MovieRow
                   title="Popular on Netflix"
-                  movies={popularMovies}
+                  movies={filteredPopularMovies}
                   onMovieClick={setSelectedMovie}
                 />
                 <MovieRow
                   title="Trending Now"
-                  movies={trendingMovies}
+                  movies={filteredTrendingMovies}
                   onMovieClick={setSelectedMovie}
                 />
                 <MovieRow
                   title="Top Rated"
-                  movies={topRatedMovies}
+                  movies={filteredTopRatedMovies}
                   onMovieClick={setSelectedMovie}
                 />
               </div>
