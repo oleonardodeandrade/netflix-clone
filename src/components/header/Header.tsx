@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
-import { useAtom, useSetAtom } from 'jotai'
+import { useSetAtom } from 'jotai'
 import { UserButton } from '@clerk/clerk-react'
 import { SearchBar } from './SearchBar'
 import { MobileMenu } from './MobileMenu'
 import { isMobileMenuOpenAtom } from '../../store/ui'
-import { selectedGenreAtom } from '../../store/movies'
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false)
   const setMobileMenuOpen = useSetAtom(isMobileMenuOpenAtom)
-  const [selectedGenre, setSelectedGenre] = useAtom(selectedGenreAtom)
 
   useEffect(() => {
     const handleScroll = () => {
