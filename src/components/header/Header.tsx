@@ -69,39 +69,6 @@ export function Header() {
                 TV Shows
               </Link>
 
-              <button
-                onClick={() => setSelectedGenre('all')}
-                className={`transition-colors text-sm font-medium cursor-pointer ${
-                  selectedGenre === 'all' ? 'text-white' : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setSelectedGenre('action')}
-                className={`transition-colors text-sm font-medium cursor-pointer ${
-                  selectedGenre === 'action' ? 'text-white' : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                Action
-              </button>
-              <button
-                onClick={() => setSelectedGenre('comedy')}
-                className={`transition-colors text-sm font-medium cursor-pointer ${
-                  selectedGenre === 'comedy' ? 'text-white' : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                Comedy
-              </button>
-              <button
-                onClick={() => setSelectedGenre('drama')}
-                className={`transition-colors text-sm font-medium cursor-pointer ${
-                  selectedGenre === 'drama' ? 'text-white' : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                Drama
-              </button>
-
               <Link to="/my-list" className="text-white hover:text-gray-300 transition-colors text-sm font-medium cursor-pointer">
                 My List
               </Link>
