@@ -11,6 +11,13 @@ export type Movie = {
   year: number;
   duration: string;
   cast: Actor[];
+  maturityRating?: string;
+  quality?: 'HD' | '4K' | 'HDR' | 'Ultra HD 4K';
+  isNew?: boolean;
+  isRecentlyAdded?: boolean;
+  isLeavingSoon?: boolean;
+  hasNewSeason?: boolean;
+  top10Rank?: number;
 };
 
 export type Episode = {
