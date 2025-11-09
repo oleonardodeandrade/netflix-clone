@@ -59,13 +59,15 @@ export function MoviePreviewModal() {
   const handleRatingChange = async (rating: number) => {
     if (!movie || !user?.id) return
 
+    const previousRating = userRating
     setUserRating(rating)
 
     try {
       await ratingsService.rateMovie(user.id, movie.id, rating)
     } catch (error) {
       console.error('Failed to rate movie:', error)
-      setUserRating(0)
+      setUserRating(previousRating)
+      alert('Failed to save rating. Please try again.')
     }
   }
 
