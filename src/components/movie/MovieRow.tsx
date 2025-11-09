@@ -56,7 +56,7 @@ export const MovieRow = memo(function MovieRow({ title, movies, onMovieClick }: 
           }}
         >
           {movies.map((movie) => (
-            <div key={movie.id} className="min-w-[150px] md:min-w-[220px] flex-shrink-0">
+            <div key={movie.id} className="min-w-[200px] sm:min-w-[240px] md:min-w-[280px] lg:min-w-[320px] flex-shrink-0">
               <MovieCard movie={movie} onClick={onMovieClick} />
             </div>
           ))}
