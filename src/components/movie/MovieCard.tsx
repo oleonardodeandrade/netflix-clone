@@ -5,6 +5,7 @@ import { useUser } from '@clerk/clerk-react'
 import type { Movie } from '../../types/movie'
 import { favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
 import { favoritesService } from '../../services/api/favoritesService'
+import { Badge, Top10Badge } from '../badges'
 
 type MovieCardProps = {
   movie: Movie
@@ -57,6 +58,14 @@ export const MovieCard = memo(function MovieCard({ movie, onClick }: MovieCardPr
           className="w-full aspect-video object-cover"
           loading="lazy"
         />
+
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {movie.top10Rank && <Top10Badge rank={movie.top10Rank} />}
+          {movie.isNew && <Badge variant="new" />}
+          {movie.isRecentlyAdded && <Badge variant="recently-added" />}
+          {movie.isLeavingSoon && <Badge variant="leaving-soon" />}
+          {movie.hasNewSeason && <Badge variant="new-season" />}
+        </div>
 
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="absolute bottom-0 left-0 right-0 p-3 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
