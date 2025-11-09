@@ -1,5 +1,6 @@
 import type { Movie } from '../../types/movie'
 import { HeroActions } from './HeroActions'
+import { MaturityRating, QualityBadge, Top10Badge } from '../badges'
 
 type HeroSectionProps = {
   movie: Movie
@@ -16,9 +17,27 @@ export function HeroSection({ movie }: HeroSectionProps) {
       <div className="relative h-full flex items-center px-4 md:px-8 lg:px-16 z-20">
         <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="space-y-6">
+            {movie.top10Rank && (
+              <div className="flex items-center gap-3">
+                <Top10Badge rank={movie.top10Rank} />
+                <span className="text-white/80 text-sm">in Movies Today</span>
+              </div>
+            )}
+
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white">
               {movie.title}
             </h1>
+
+            <div className="flex items-center gap-3 text-sm">
+              {movie.maturityRating && (
+                <MaturityRating rating={movie.maturityRating} />
+              )}
+              <span className="text-white/80">{movie.year}</span>
+              {movie.quality && <QualityBadge quality={movie.quality} />}
+              <span className="text-green-400 font-semibold">
+                {Math.round(movie.rating * 10)}% Match
+              </span>
+            </div>
 
             <HeroActions movie={movie} />
           </div>
