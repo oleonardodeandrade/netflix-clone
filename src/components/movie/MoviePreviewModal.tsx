@@ -6,6 +6,7 @@ import { selectedMovieAtom, favoriteMoviesAtom, toggleFavoriteAtom } from '../..
 import { favoritesService } from '../../services/api/favoritesService'
 import { ratingsService } from '../../services/api/ratingsService'
 import { StarRating } from '../rating/StarRating'
+import { MaturityRating, QualityBadge } from '../badges'
 
 export function MoviePreviewModal() {
   const { user } = useUser()
@@ -215,10 +216,14 @@ export function MoviePreviewModal() {
         <div className="p-8 space-y-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2 space-y-4">
-              <div className="flex items-center gap-4 text-sm text-white/80">
+              <div className="flex items-center gap-3 text-sm flex-wrap">
                 <span className="text-green-500 font-semibold">{Math.round(movie.rating * 10)}% Match</span>
-                <span>{movie.year}</span>
-                <span>{movie.duration}</span>
+                <span className="text-white/80">{movie.year}</span>
+                {movie.maturityRating && (
+                  <MaturityRating rating={movie.maturityRating} />
+                )}
+                {movie.quality && <QualityBadge quality={movie.quality} />}
+                <span className="text-white/80">{movie.duration}</span>
               </div>
 
               {movie.description && (
