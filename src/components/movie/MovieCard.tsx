@@ -50,11 +50,11 @@ export const MovieCard = memo(function MovieCard({ movie, onClick }: MovieCardPr
 
   return (
     <div className="group relative cursor-pointer transition-all duration-300 ease-in-out hover:scale-110 hover:z-20">
-      <div className="relative overflow-hidden rounded-md bg-zinc-900">
+      <div className="relative overflow-hidden rounded-sm bg-zinc-900">
         <img
           src={movie.posterUrl}
           alt={movie.title}
-          className="w-full aspect-[2/3] object-cover"
+          className="w-full aspect-video object-cover"
           loading="lazy"
         />
 
