@@ -39,6 +39,16 @@ export const mapToMovie = (apiMovie: ApiMovie): Movie => {
     ? apiMovie.genre_ids.map(id => GENRE_MAP[id] || 'other').filter(Boolean)
     : [];
 
+  const movieId = apiMovie.id;
+  const randomSeed = movieId % 10;
+  const currentYear = new Date().getFullYear();
+  const isRecent = year >= currentYear - 1;
+
+  const maturityRatings = ['TV-MA', 'TV-14', 'PG-13', 'R', 'TV-PG'];
+  const maturityRating = maturityRatings[movieId % maturityRatings.length];
+
+  const quality: 'HD' | '4K' | undefined = apiMovie.vote_average > 7.5 ? '4K' : 'HD';
+
   return {
     id: String(apiMovie.id),
     title: apiMovie.title,
@@ -52,6 +62,13 @@ export const mapToMovie = (apiMovie: ApiMovie): Movie => {
     tags,
     cast: [],
     episodes: [],
+    maturityRating,
+    quality,
+    isNew: isRecent && randomSeed === 1,
+    isRecentlyAdded: isRecent && randomSeed === 2,
+    isLeavingSoon: randomSeed === 3,
+    hasNewSeason: randomSeed === 4,
+    top10Rank: randomSeed === 0 ? (movieId % 10) + 1 : undefined,
   };
 };
 
