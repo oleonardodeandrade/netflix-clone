@@ -19,13 +19,15 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.53.3",
     "@prisma/client": "^6.18.0",
+    "@types/video.js": "^7.3.58",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "jotai": "^2.15.0",
     "prisma": "^6.18.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router": "^7.9.4"
+    "react-router": "^7.9.4",
+    "video.js": "^8.23.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

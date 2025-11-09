@@ -1,19 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useAtom, useSetAtom } from 'jotai'
+import { useNavigate } from 'react-router'
 import { useUser } from '@clerk/clerk-react'
 import { selectedMovieAtom, favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
 import { favoritesService } from '../../services/api/favoritesService'
 import { ratingsService } from '../../services/api/ratingsService'
 import { StarRating } from '../rating/StarRating'
+import { MaturityRating, QualityBadge } from '../badges'
 
 export function MoviePreviewModal() {
   const { user } = useUser()
+  const navigate = useNavigate()
   const [movie, setMovie] = useAtom(selectedMovieAtom)
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useSetAtom(toggleFavoriteAtom)
   const [userRating, setUserRating] = useState(0)
 
   const onClose = () => setMovie(null)
+
+  const handlePlay = () => {
+    if (!movie) return
+    navigate(`/watch/${movie.id}`)
+  }
 
   const isFavorite = movie ? favorites.some((fav) => fav.id === movie.id) : false
 
@@ -52,13 +60,15 @@ export function MoviePreviewModal() {
   const handleRatingChange = async (rating: number) => {
     if (!movie || !user?.id) return
 
+    const previousRating = userRating
     setUserRating(rating)
 
     try {
       await ratingsService.rateMovie(user.id, movie.id, rating)
     } catch (error) {
       console.error('Failed to rate movie:', error)
-      setUserRating(0)
+      setUserRating(previousRating)
+      alert('Failed to save rating. Please try again.')
     }
   }
 
@@ -105,16 +115,16 @@ export function MoviePreviewModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 md:p-8 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-black rounded-lg shadow-2xl animate-scale-in"
+        className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-zinc-900 rounded-xl shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center bg-black/70 hover:bg-black rounded-full transition-colors"
+          className="absolute top-3 right-3 md:top-5 md:right-5 z-10 w-10 h-10 md:w-11 md:h-11 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded-full transition-all border border-zinc-700 hover:border-zinc-600"
           aria-label="Close modal"
         >
           <svg
@@ -126,7 +136,7 @@ export function MoviePreviewModal() {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={2.5}
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
@@ -145,9 +155,12 @@ export function MoviePreviewModal() {
           <div className="absolute bottom-0 left-0 right-0 p-8">
             <h2 className="text-4xl font-bold text-white mb-4">{movie.title}</h2>
 
-            <div className="flex gap-4">
-              <button className="flex items-center gap-2 bg-white text-black px-6 py-2 rounded font-semibold hover:bg-white/90 transition-colors">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <div className="flex gap-3 md:gap-4">
+              <button
+                onClick={handlePlay}
+                className="flex items-center gap-2 md:gap-3 bg-white text-black px-6 md:px-8 py-2 md:py-3 rounded font-bold hover:bg-white/80 transition-all shadow-lg text-base md:text-lg"
+              >
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
                 <span>Play</span>
@@ -155,15 +168,15 @@ export function MoviePreviewModal() {
 
               <button
                 onClick={handleFavoriteClick}
-                className={`w-10 h-10 flex items-center justify-center border-2 rounded-full transition-colors ${
+                className={`w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border-2 rounded-full transition-all ${
                   isFavorite
-                    ? 'border-red-500 bg-red-500/10 hover:bg-red-500/20'
-                    : 'border-gray-400 hover:border-white'
+                    ? 'border-red-500 bg-red-500/20 hover:bg-red-500/30'
+                    : 'border-white/60 hover:border-white bg-zinc-800/50 hover:bg-zinc-800'
                 }`}
                 aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               >
                 <svg
-                  className={`w-5 h-5 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-white'}`}
+                  className={`w-5 h-5 md:w-6 md:h-6 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-white'}`}
                   fill={isFavorite ? 'currentColor' : 'none'}
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -179,11 +192,11 @@ export function MoviePreviewModal() {
 
               <button
                 onClick={handleShare}
-                className="w-10 h-10 flex items-center justify-center border-2 border-gray-400 rounded-full hover:border-white transition-colors"
+                className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border-2 border-white/60 hover:border-white rounded-full hover:bg-zinc-800 transition-all bg-zinc-800/50"
                 aria-label="Share movie"
               >
                 <svg
-                  className="w-5 h-5 text-white"
+                  className="w-5 h-5 md:w-6 md:h-6 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -203,10 +216,14 @@ export function MoviePreviewModal() {
         <div className="p-8 space-y-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2 space-y-4">
-              <div className="flex items-center gap-4 text-sm text-white/80">
+              <div className="flex items-center gap-3 text-sm flex-wrap">
                 <span className="text-green-500 font-semibold">{Math.round(movie.rating * 10)}% Match</span>
-                <span>{movie.year}</span>
-                <span>{movie.duration}</span>
+                <span className="text-white/80">{movie.year}</span>
+                {movie.maturityRating && (
+                  <MaturityRating rating={movie.maturityRating} />
+                )}
+                {movie.quality && <QualityBadge quality={movie.quality} />}
+                <span className="text-white/80">{movie.duration}</span>
               </div>
 
               {movie.description && (
