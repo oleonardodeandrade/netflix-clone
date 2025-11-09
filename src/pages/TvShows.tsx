@@ -46,18 +46,18 @@ export default function TvShows() {
         <h1 className="text-3xl md:text-4xl font-bold mb-8">TV Shows</h1>
 
         {loading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3">
             {[...Array(24)].map((_, i) => (
               <div
                 key={i}
-                className="aspect-[2/3] bg-zinc-800 rounded-md animate-pulse"
+                className="aspect-video bg-zinc-800 rounded-sm animate-pulse"
               />
             ))}
           </div>
         )}
 
         {!loading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3">
             {shows.map((show) => (
               <MovieCard
                 key={show.id}
