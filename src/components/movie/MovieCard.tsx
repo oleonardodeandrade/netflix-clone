@@ -1,10 +1,9 @@
 import { memo } from 'react'
 import { useNavigate } from 'react-router'
-import { useAtom, useSetAtom } from 'jotai'
-import { useUser } from '@clerk/clerk-react'
+import { useAtom } from 'jotai'
 import type { Movie } from '../../types/movie'
-import { favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
-import { favoritesService } from '../../services/api/favoritesService'
+import { favoriteMoviesAtom } from '../../store/movies'
+import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import { Badge, Top10Badge } from '../badges'
 
 type MovieCardProps = {
@@ -13,10 +12,9 @@ type MovieCardProps = {
 }
 
 export const MovieCard = memo(function MovieCard({ movie, onClick }: MovieCardProps) {
-  const { user } = useUser()
   const navigate = useNavigate()
   const [favorites] = useAtom(favoriteMoviesAtom)
-  const toggleFavorite = useSetAtom(toggleFavoriteAtom)
+  const toggleFavorite = useToggleFavorite()
 
   const isFavorite = favorites.some((fav) => fav.id === movie.id)
 
@@ -27,21 +25,7 @@ export const MovieCard = memo(function MovieCard({ movie, onClick }: MovieCardPr
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
-
-    if (!user?.id) return
-
-    toggleFavorite(movie)
-
-    try {
-      if (isFavorite) {
-        await favoritesService.removeFavorite(user.id, movie.id)
-      } else {
-        await favoritesService.addFavorite(user.id, movie.id)
-      }
-    } catch (error) {
-      console.error('Failed to update favorite:', error)
-      toggleFavorite(movie)
-    }
+    await toggleFavorite(movie, isFavorite)
   }
 
   const handleMoreInfo = (e: React.MouseEvent) => {

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useAtom, useSetAtom } from 'jotai'
+import { useAtom } from 'jotai'
 import { useNavigate } from 'react-router'
 import { useUser } from '@clerk/clerk-react'
-import { selectedMovieAtom, favoriteMoviesAtom, toggleFavoriteAtom } from '../../store/movies'
-import { favoritesService } from '../../services/api/favoritesService'
+import { selectedMovieAtom, favoriteMoviesAtom } from '../../store/movies'
+import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import { ratingsService } from '../../services/api/ratingsService'
 import { StarRating } from '../rating/StarRating'
 import { MaturityRating, QualityBadge } from '../badges'
@@ -13,7 +13,7 @@ export function MoviePreviewModal() {
   const navigate = useNavigate()
   const [movie, setMovie] = useAtom(selectedMovieAtom)
   const [favorites] = useAtom(favoriteMoviesAtom)
-  const toggleFavorite = useSetAtom(toggleFavoriteAtom)
+  const toggleFavorite = useToggleFavorite()
   const [userRating, setUserRating] = useState(0)
 
   const onClose = () => setMovie(null)
@@ -41,20 +41,8 @@ export function MoviePreviewModal() {
   }, [movie, user?.id])
 
   const handleFavoriteClick = async () => {
-    if (!movie || !user?.id) return
-
-    toggleFavorite(movie)
-
-    try {
-      if (isFavorite) {
-        await favoritesService.removeFavorite(user.id, movie.id)
-      } else {
-        await favoritesService.addFavorite(user.id, movie.id)
-      }
-    } catch (error) {
-      console.error('Failed to update favorite:', error)
-      toggleFavorite(movie)
-    }
+    if (!movie) return
+    await toggleFavorite(movie, isFavorite)
   }
 
   const handleRatingChange = async (rating: number) => {
