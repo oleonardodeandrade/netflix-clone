@@ -1,7 +1,8 @@
-import { useSetAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import { useNavigate } from 'react-router'
 import type { Movie } from '../../types/movie'
-import { selectedMovieAtom } from '../../store/movies'
+import { favoriteMoviesAtom, selectedMovieAtom } from '../../store/movies'
+import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 
 type HeroActionsProps = {
   movie: Movie
@@ -9,7 +10,11 @@ type HeroActionsProps = {
 
 export function HeroActions({ movie }: HeroActionsProps) {
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
+  const [favorites] = useAtom(favoriteMoviesAtom)
+  const toggleFavorite = useToggleFavorite()
   const navigate = useNavigate()
+
+  const isFavorite = favorites.some((fav) => fav.id === movie.id)
 
   const handlePlay = () => {
     navigate(`/watch/${movie.id}`)
@@ -17,6 +22,10 @@ export function HeroActions({ movie }: HeroActionsProps) {
 
   const handleMoreInfo = () => {
     setSelectedMovie(movie)
+  }
+
+  const handleFavoriteClick = async () => {
+    await toggleFavorite(movie, isFavorite)
   }
 
   return (
@@ -33,6 +42,26 @@ export function HeroActions({ movie }: HeroActionsProps) {
           <path d="M8 5v14l11-7z" />
         </svg>
         <span>Play</span>
+      </button>
+
+      <button
+        onClick={handleFavoriteClick}
+        className="flex items-center gap-2 md:gap-3 bg-gray-500/70 text-white px-4 md:px-6 py-2 md:py-3 rounded font-semibold hover:bg-gray-500/50 transition-all backdrop-blur-sm text-base md:text-lg shadow-lg hover:shadow-xl"
+      >
+        <svg
+          className={`w-5 h-5 md:w-6 md:h-6 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-white'}`}
+          fill={isFavorite ? 'currentColor' : 'none'}
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+          />
+        </svg>
+        <span>{isFavorite ? 'Remove from List' : 'Add to List'}</span>
       </button>
 
       <button

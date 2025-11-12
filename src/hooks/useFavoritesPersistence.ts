@@ -1,14 +1,22 @@
 import { useEffect } from 'react'
 import { useUser } from '@clerk/clerk-react'
-import { useSetAtom } from 'jotai'
+import { useAtom } from 'jotai'
 import { favoriteMoviesAtom } from '../store/movies'
 import { favoritesService } from '../services/api/favoritesService'
+import { favoritesStorage } from '../services/localStorage/favoritesStorage'
 import { movieService } from '../services'
 import type { Movie } from '../types/movie'
 
 export function useFavoritesPersistence() {
   const { user } = useUser()
-  const setFavorites = useSetAtom(favoriteMoviesAtom)
+  const [favorites, setFavorites] = useAtom(favoriteMoviesAtom)
+
+  useEffect(() => {
+    const storedFavorites = favoritesStorage.getFavorites()
+    if (storedFavorites.length > 0) {
+      setFavorites(storedFavorites)
+    }
+  }, [setFavorites])
 
   useEffect(() => {
     if (!user?.id) return
@@ -31,11 +39,16 @@ export function useFavoritesPersistence() {
         )
 
         setFavorites(movies)
+        favoritesStorage.saveFavorites(movies)
       } catch (error) {
-        console.error('Failed to load favorites from API:', error)
+        console.warn('API not available, using localStorage only:', error)
       }
     }
 
     loadFavorites()
   }, [user?.id, setFavorites])
+
+  useEffect(() => {
+    favoritesStorage.saveFavorites(favorites)
+  }, [favorites])
 }
