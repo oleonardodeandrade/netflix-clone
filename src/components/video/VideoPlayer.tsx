@@ -12,10 +12,14 @@ type VideoPlayerProps = {
 
 export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, onProgressUpdate }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const progressUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastSavedTimeRef = useRef<number>(0)
+
+  const isYouTube = src.includes('youtube.com') || src.includes('youtu.be')
+  const youtubeEmbedUrl = isYouTube ? src.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/') : null
 
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -219,23 +223,31 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
       onMouseMove={resetControlsTimeout}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
-      <video
-        ref={videoRef}
-        src={src}
-        poster={poster}
-        className="w-full h-full"
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        onEnded={onEnded}
-        onClick={togglePlay}
-      />
+      {isYouTube && youtubeEmbedUrl ? (
+        <iframe
+          ref={iframeRef}
+          src={`${youtubeEmbedUrl}?autoplay=1&controls=0&modestbranding=1&rel=0&start=${Math.floor(initialTime || 0)}`}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          src={src}
+          poster={poster}
+          className="w-full h-full"
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={onEnded}
+          onClick={togglePlay}
+        />
+      )}
 
       {onBack && (
         <button
           onClick={onBack}
-          className={`absolute top-4 left-4 z-50 flex items-center gap-2 text-white hover:text-gray-300 transition-all ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="absolute top-4 left-4 z-50 flex items-center gap-2 text-white hover:text-gray-300 transition-all"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -244,33 +256,31 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
       )}
 
       {title && (
-        <div
-          className={`absolute top-4 left-20 z-50 text-white text-xl font-semibold transition-all ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
+        <div className="absolute top-4 left-20 z-50 text-white text-xl font-semibold">
           {title}
         </div>
       )}
 
-      {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center z-30">
-          <button
-            onClick={togglePlay}
-            className="w-20 h-20 flex items-center justify-center bg-black/50 rounded-full hover:bg-black/70 transition-all"
-          >
-            <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </button>
-        </div>
-      )}
+      {!isYouTube && (
+        <>
+          {!isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center z-30">
+              <button
+                onClick={togglePlay}
+                className="w-20 h-20 flex items-center justify-center bg-black/50 rounded-full hover:bg-black/70 transition-all"
+              >
+                <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </button>
+            </div>
+          )}
 
-      <div
-        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent z-40 transition-all duration-300 ${
-          showControls ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
+          <div
+            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent z-40 transition-all duration-300 ${
+              showControls ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
         <div className="px-4 pb-2">
           <div className="relative group/progress">
             <div className="h-1 bg-gray-600 rounded-full overflow-hidden cursor-pointer">
@@ -368,6 +378,8 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
           </div>
         </div>
       </div>
+        </>
+      )}
 
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-20" />
     </div>
