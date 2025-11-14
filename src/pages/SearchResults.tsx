@@ -7,6 +7,7 @@ import { Header } from '../components/header/Header'
 import { Footer } from '../components/footer/Footer'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
 import { MovieCard } from '../components/movie/MovieCard'
+import { MovieGridSkeleton } from '../components/skeleton'
 import { selectedMovieAtom } from '../store/movies'
 import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
 
@@ -76,16 +77,7 @@ export default function SearchResults() {
             </h1>
           )}
 
-          {loading && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {[...Array(12)].map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-800 aspect-[2/3] rounded-md animate-pulse"
-                ></div>
-              ))}
-            </div>
-          )}
+          {loading && <MovieGridSkeleton count={18} />}
 
           {error && (
             <div className="text-center py-20">
