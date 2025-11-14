@@ -7,6 +7,7 @@ import { MovieCard } from '../components/movie/MovieCard'
 import { Header } from '../components/header/Header'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
 import { Footer } from '../components/footer/Footer'
+import { MovieGridSkeleton } from '../components/skeleton'
 import { selectedMovieAtom } from '../store/movies'
 
 export default function TvShows() {
@@ -45,16 +46,7 @@ export default function TvShows() {
       <main className="pt-20 px-4 md:px-8 pb-16">
         <h1 className="text-3xl md:text-4xl font-bold mb-8">TV Shows</h1>
 
-        {loading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3">
-            {[...Array(24)].map((_, i) => (
-              <div
-                key={i}
-                className="aspect-video bg-zinc-800 rounded-sm animate-pulse"
-              />
-            ))}
-          </div>
-        )}
+        {loading && <MovieGridSkeleton count={24} />}
 
         {!loading && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3">
