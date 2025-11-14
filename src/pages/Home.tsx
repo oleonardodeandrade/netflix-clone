@@ -8,6 +8,7 @@ import { Header } from '../components/header/Header'
 import { HeroSection } from '../components/hero/HeroSection'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
 import { Footer } from '../components/footer/Footer'
+import { HeroSkeleton, MovieRowSkeleton } from '../components/skeleton'
 import { selectedMovieAtom, selectedGenreAtom } from '../store/movies'
 import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
 import { useWatchHistoryPersistence } from '../hooks/useWatchHistoryPersistence'
@@ -129,20 +130,10 @@ export default function Home() {
         <SignedIn>
           {loading && (
             <div className="pt-20">
-              <div className="h-[80vh] bg-gray-800 animate-pulse"></div>
-              <div className="px-8 py-8 space-y-8">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="h-8 bg-gray-800 rounded w-48 animate-pulse mb-4"></div>
-                    <div className="flex gap-2 overflow-hidden">
-                      {[...Array(6)].map((_, j) => (
-                        <div
-                          key={j}
-                          className="min-w-[150px] md:min-w-[200px] bg-gray-800 aspect-[2/3] rounded-md animate-pulse"
-                        ></div>
-                      ))}
-                    </div>
-                  </div>
+              <HeroSkeleton />
+              <div className="space-y-8 py-8 -mt-32 relative z-10">
+                {[...Array(4)].map((_, i) => (
+                  <MovieRowSkeleton key={i} />
                 ))}
               </div>
             </div>
