@@ -62,7 +62,7 @@ export default function Watch() {
     <div className="min-h-screen bg-black">
       <div className="w-full h-screen">
         <VideoPlayer
-          src={movie.backdropUrl}
+          src={movie.previewUrl}
           poster={movie.backdropUrl}
           title={movie.title}
           initialTime={progress?.progress || 0}
