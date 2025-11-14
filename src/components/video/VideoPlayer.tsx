@@ -4,14 +4,18 @@ type VideoPlayerProps = {
   src: string
   poster?: string
   title?: string
+  initialTime?: number
   onBack?: () => void
   onEnded?: () => void
+  onProgressUpdate?: (currentTime: number, duration: number) => void
 }
 
-export function VideoPlayer({ src, poster, title, onBack, onEnded }: VideoPlayerProps) {
+export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, onProgressUpdate }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const progressUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastSavedTimeRef = useRef<number>(0)
 
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -35,17 +39,41 @@ export function VideoPlayer({ src, poster, title, onBack, onEnded }: VideoPlayer
 
   const handleTimeUpdate = useCallback(() => {
     if (!videoRef.current) return
-    setCurrentTime(videoRef.current.currentTime)
+    const currentVideoTime = videoRef.current.currentTime
+    const videoDuration = videoRef.current.duration
+
+    setCurrentTime(currentVideoTime)
 
     if (videoRef.current.buffered.length > 0) {
       setBuffered(videoRef.current.buffered.end(videoRef.current.buffered.length - 1))
     }
-  }, [])
+
+    if (onProgressUpdate && videoDuration > 0) {
+      const timeSinceLastSave = Math.abs(currentVideoTime - lastSavedTimeRef.current)
+
+      if (timeSinceLastSave >= 5) {
+        lastSavedTimeRef.current = currentVideoTime
+
+        if (progressUpdateTimeoutRef.current) {
+          clearTimeout(progressUpdateTimeoutRef.current)
+        }
+
+        progressUpdateTimeoutRef.current = setTimeout(() => {
+          onProgressUpdate(currentVideoTime, videoDuration)
+        }, 1000)
+      }
+    }
+  }, [onProgressUpdate])
 
   const handleLoadedMetadata = useCallback(() => {
     if (!videoRef.current) return
     setDuration(videoRef.current.duration)
-  }, [])
+
+    if (initialTime && initialTime > 0) {
+      videoRef.current.currentTime = initialTime
+      setCurrentTime(initialTime)
+    }
+  }, [initialTime])
 
   const handleSeek = useCallback((time: number) => {
     if (!videoRef.current) return
@@ -163,6 +191,9 @@ export function VideoPlayer({ src, poster, title, onBack, onEnded }: VideoPlayer
     return () => {
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current)
+      }
+      if (progressUpdateTimeoutRef.current) {
+        clearTimeout(progressUpdateTimeoutRef.current)
       }
     }
   }, [])

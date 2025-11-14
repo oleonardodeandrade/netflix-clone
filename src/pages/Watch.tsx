@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { movieService } from '../services'
 import type { Movie } from '../types/movie'
 import { VideoPlayer } from '../components/video/VideoPlayer'
+import { useWatchProgress } from '../hooks/useWatchProgress'
 
 export default function Watch() {
   const { id } = useParams<{ id: string }>()
@@ -31,12 +32,22 @@ export default function Watch() {
     fetchMovie()
   }, [id, navigate])
 
+  const { progress, saveProgress } = useWatchProgress(id || '', movie || ({} as Movie))
+
   const handleBack = () => {
     navigate(-1)
   }
 
   const handleEnded = () => {
-    console.log('Video ended')
+    if (movie && id) {
+      saveProgress(0, 0, true)
+    }
+  }
+
+  const handleProgressUpdate = (currentTime: number, duration: number) => {
+    if (movie && id) {
+      saveProgress(currentTime, duration)
+    }
   }
 
   if (loading) {
@@ -54,8 +65,10 @@ export default function Watch() {
           src={movie.backdropUrl}
           poster={movie.backdropUrl}
           title={movie.title}
+          initialTime={progress?.progress || 0}
           onBack={handleBack}
           onEnded={handleEnded}
+          onProgressUpdate={handleProgressUpdate}
         />
       </div>
     </div>
