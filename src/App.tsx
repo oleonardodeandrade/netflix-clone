@@ -9,6 +9,7 @@ const MyList = lazy(() => import('./pages/MyList'))
 const SearchResults = lazy(() => import('./pages/SearchResults'))
 const Watch = lazy(() => import('./pages/Watch'))
 const ProfileSelector = lazy(() => import('./pages/ProfileSelector'))
+const ManageProfiles = lazy(() => import('./pages/ManageProfiles'))
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profiles" element={<ProfileSelector />} />
+        <Route path="/profiles/manage" element={<ManageProfiles />} />
         <Route path="/movies" element={<Movies />} />
         <Route path="/tv-shows" element={<TvShows />} />
         <Route path="/my-list" element={<MyList />} />
