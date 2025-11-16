@@ -8,6 +8,7 @@ const TvShows = lazy(() => import('./pages/TvShows'))
 const MyList = lazy(() => import('./pages/MyList'))
 const SearchResults = lazy(() => import('./pages/SearchResults'))
 const Watch = lazy(() => import('./pages/Watch'))
+const ProfileSelector = lazy(() => import('./pages/ProfileSelector'))
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/profiles" element={<ProfileSelector />} />
         <Route path="/movies" element={<Movies />} />
         <Route path="/tv-shows" element={<TvShows />} />
         <Route path="/my-list" element={<MyList />} />
