@@ -1,5 +1,40 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
+declare global {
+  interface Window {
+    YT: {
+      Player: new (
+        element: HTMLElement | string,
+        config: {
+          videoId: string
+          playerVars?: Record<string, number | string>
+          events?: {
+            onReady?: (event: { target: YTPlayer }) => void
+            onStateChange?: (event: { data: number }) => void
+          }
+        }
+      ) => YTPlayer
+      PlayerState: {
+        ENDED: number
+        PLAYING: number
+        PAUSED: number
+        BUFFERING: number
+        CUED: number
+      }
+    }
+    onYouTubeIframeAPIReady: () => void
+  }
+}
+
+interface YTPlayer {
+  destroy(): void
+  getCurrentTime(): number
+  getDuration(): number
+  playVideo(): void
+  pauseVideo(): void
+  seekTo(seconds: number, allowSeekAhead: boolean): void
+}
+
 type VideoPlayerProps = {
   src: string
   poster?: string
@@ -10,16 +45,32 @@ type VideoPlayerProps = {
   onProgressUpdate?: (currentTime: number, duration: number) => void
 }
 
+const getYouTubeVideoId = (url: string): string | null => {
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/
+  const match = url.match(regExp)
+  return match && match[7].length === 11 ? match[7] : null
+}
+
 export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, onProgressUpdate }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const youtubePlayerRef = useRef<YTPlayer | null>(null)
+  const youtubeDivRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const progressUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const progressPollingRef = useRef<NodeJS.Timeout | null>(null)
   const lastSavedTimeRef = useRef<number>(0)
 
+  const onEndedRef = useRef(onEnded)
+  const onProgressUpdateRef = useRef(onProgressUpdate)
+
+  useEffect(() => {
+    onEndedRef.current = onEnded
+    onProgressUpdateRef.current = onProgressUpdate
+  }, [onEnded, onProgressUpdate])
+
   const isYouTube = src.includes('youtube.com') || src.includes('youtu.be')
-  const youtubeEmbedUrl = isYouTube ? src.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/') : null
+  const youtubeVideoId = isYouTube ? getYouTubeVideoId(src) : null
 
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -192,12 +243,101 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
   }, [])
 
   useEffect(() => {
+    if (!isYouTube || !youtubeVideoId || !youtubeDivRef.current) return
+
+    if (youtubePlayerRef.current) {
+      youtubePlayerRef.current.destroy()
+      youtubePlayerRef.current = null
+    }
+
+    if (progressPollingRef.current) {
+      clearTimeout(progressPollingRef.current)
+      progressPollingRef.current = null
+    }
+
+    const initializePlayer = () => {
+      if (!window.YT || !window.YT.Player) {
+        setTimeout(initializePlayer, 100)
+        return
+      }
+
+      youtubePlayerRef.current = new window.YT.Player(youtubeDivRef.current!, {
+        videoId: youtubeVideoId,
+        playerVars: {
+          autoplay: 1,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0,
+          start: Math.floor(initialTime || 0),
+        },
+        events: {
+          onReady: (event) => {
+            const player = event.target
+
+            setTimeout(() => {
+              player.playVideo()
+            }, 500)
+
+            setTimeout(() => {
+              const duration = player.getDuration()
+              setDuration(duration)
+
+              const pollProgress = () => {
+                if (!youtubePlayerRef.current) return
+
+                const currentTime = youtubePlayerRef.current.getCurrentTime()
+                const duration = youtubePlayerRef.current.getDuration()
+
+                setCurrentTime(currentTime)
+
+                const timeSinceLastSave = Math.abs(currentTime - lastSavedTimeRef.current)
+                if (onProgressUpdateRef.current && duration > 0 && timeSinceLastSave >= 5) {
+                  lastSavedTimeRef.current = currentTime
+                  onProgressUpdateRef.current(currentTime, duration)
+                }
+
+                progressPollingRef.current = setTimeout(pollProgress, 1000)
+              }
+
+              pollProgress()
+            }, 1000)
+          },
+          onStateChange: (event) => {
+            if (event.data === window.YT.PlayerState.ENDED && onEndedRef.current) {
+              onEndedRef.current()
+            }
+          },
+          onError: (event) => {
+            console.error('YouTube Player error:', event.data)
+          },
+        },
+      })
+    }
+
+    initializePlayer()
+
+    return () => {
+      if (youtubePlayerRef.current) {
+        youtubePlayerRef.current.destroy()
+        youtubePlayerRef.current = null
+      }
+      if (progressPollingRef.current) {
+        clearTimeout(progressPollingRef.current)
+        progressPollingRef.current = null
+      }
+    }
+  }, [isYouTube, youtubeVideoId])
+
+  useEffect(() => {
     return () => {
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current)
       }
       if (progressUpdateTimeoutRef.current) {
         clearTimeout(progressUpdateTimeoutRef.current)
+      }
+      if (progressPollingRef.current) {
+        clearTimeout(progressPollingRef.current)
       }
     }
   }, [])
@@ -223,14 +363,8 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
       onMouseMove={resetControlsTimeout}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
-      {isYouTube && youtubeEmbedUrl ? (
-        <iframe
-          ref={iframeRef}
-          src={`${youtubeEmbedUrl}?autoplay=1&controls=0&modestbranding=1&rel=0&start=${Math.floor(initialTime || 0)}`}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
+      {isYouTube && youtubeVideoId ? (
+        <div ref={youtubeDivRef} className="w-full h-full" />
       ) : (
         <video
           ref={videoRef}
