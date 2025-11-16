@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { useUser } from '@clerk/clerk-react'
-import { useAtom } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import { favoriteMoviesAtom } from '../store/movies'
+import { currentProfileAtom } from '../store/profiles'
 import { favoritesService } from '../services/api/favoritesService'
 import { favoritesStorage } from '../services/localStorage/favoritesStorage'
 import { movieService } from '../services'
@@ -9,21 +10,26 @@ import type { Movie } from '../types/movie'
 
 export function useFavoritesPersistence() {
   const { user } = useUser()
-  const [favorites, setFavorites] = useAtom(favoriteMoviesAtom)
+  const currentProfile = useAtomValue(currentProfileAtom)
+  const [, setFavorites] = useAtom(favoriteMoviesAtom)
 
   useEffect(() => {
-    const storedFavorites = favoritesStorage.getFavorites()
+    if (!currentProfile) return
+
+    const storedFavorites = favoritesStorage.getFavorites(currentProfile.id)
     if (storedFavorites.length > 0) {
       setFavorites(storedFavorites)
+    } else {
+      setFavorites([])
     }
-  }, [setFavorites])
+  }, [currentProfile?.id, setFavorites])
 
   useEffect(() => {
-    if (!user?.id) return
+    if (!user?.id || !currentProfile?.id) return
 
     const loadFavorites = async () => {
       try {
-        const favoritesData = await favoritesService.getFavorites(user.id)
+        const favoritesData = await favoritesService.getFavorites(user.id, currentProfile.id)
 
         const moviePromises = favoritesData.map(async (fav) => {
           try {
@@ -39,16 +45,15 @@ export function useFavoritesPersistence() {
         )
 
         setFavorites(movies)
-        favoritesStorage.saveFavorites(movies)
+
+        movies.forEach((movie) => {
+          favoritesStorage.addFavorite(movie, currentProfile.id)
+        })
       } catch (error) {
         console.warn('API not available, using localStorage only:', error)
       }
     }
 
     loadFavorites()
-  }, [user?.id, setFavorites])
-
-  useEffect(() => {
-    favoritesStorage.saveFavorites(favorites)
-  }, [favorites])
+  }, [user?.id, currentProfile?.id, setFavorites])
 }

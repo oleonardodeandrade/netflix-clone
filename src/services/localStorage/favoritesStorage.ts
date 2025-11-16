@@ -2,18 +2,33 @@ import type { Movie } from '../../types/movie'
 
 const FAVORITES_KEY = 'netflix-clone-favorites'
 
+interface FavoriteWithProfile {
+  movie: Movie
+  profileId?: string
+}
+
 export const favoritesStorage = {
-  getFavorites(): Movie[] {
+  getFavorites(profileId?: string): Movie[] {
     try {
       const stored = localStorage.getItem(FAVORITES_KEY)
-      return stored ? JSON.parse(stored) : []
+      if (!stored) return []
+
+      const data: FavoriteWithProfile[] = JSON.parse(stored)
+
+      if (!profileId) {
+        return data.map((item) => item.movie || item as unknown as Movie)
+      }
+
+      return data
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.movie)
     } catch (error) {
       console.error('Failed to load favorites from localStorage:', error)
       return []
     }
   },
 
-  saveFavorites(favorites: Movie[]): void {
+  saveFavorites(favorites: FavoriteWithProfile[]): void {
     try {
       localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites))
     } catch (error) {
@@ -21,23 +36,38 @@ export const favoritesStorage = {
     }
   },
 
-  addFavorite(movie: Movie): void {
-    const favorites = this.getFavorites()
-    const exists = favorites.some((fav) => fav.id === movie.id)
+  addFavorite(movie: Movie, profileId?: string): void {
+    const stored = localStorage.getItem(FAVORITES_KEY)
+    const allFavorites: FavoriteWithProfile[] = stored ? JSON.parse(stored) : []
+
+    const exists = allFavorites.some(
+      (fav) => fav.movie.id === movie.id && fav.profileId === profileId
+    )
 
     if (!exists) {
-      this.saveFavorites([...favorites, movie])
+      this.saveFavorites([...allFavorites, { movie, profileId }])
     }
   },
 
-  removeFavorite(movieId: string): void {
-    const favorites = this.getFavorites()
-    this.saveFavorites(favorites.filter((fav) => fav.id !== movieId))
+  removeFavorite(movieId: string, profileId?: string): void {
+    const stored = localStorage.getItem(FAVORITES_KEY)
+    const allFavorites: FavoriteWithProfile[] = stored ? JSON.parse(stored) : []
+
+    this.saveFavorites(
+      allFavorites.filter(
+        (fav) => !(fav.movie.id === movieId && fav.profileId === profileId)
+      )
+    )
   },
 
-  isFavorite(movieId: string): boolean {
-    const favorites = this.getFavorites()
-    return favorites.some((fav) => fav.id === movieId)
+  isFavorite(movieId: string, profileId?: string): boolean {
+    const stored = localStorage.getItem(FAVORITES_KEY)
+    if (!stored) return false
+
+    const allFavorites: FavoriteWithProfile[] = JSON.parse(stored)
+    return allFavorites.some(
+      (fav) => fav.movie.id === movieId && fav.profileId === profileId
+    )
   },
 
   clear(): void {
