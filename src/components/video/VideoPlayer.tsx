@@ -11,6 +11,7 @@ declare global {
           events?: {
             onReady?: (event: { target: YTPlayer }) => void
             onStateChange?: (event: { data: number }) => void
+            onError?: (event: { data: number }) => void
           }
         }
       ) => YTPlayer
@@ -307,7 +308,7 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
               onEndedRef.current()
             }
           },
-          onError: (event) => {
+          onError: (event: { data: number }) => {
             console.error('YouTube Player error:', event.data)
           },
         },
