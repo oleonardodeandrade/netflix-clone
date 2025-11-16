@@ -1,9 +1,10 @@
-import { SignedIn, SignedOut, SignInButton, useUser } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { useSetAtom, useAtom } from 'jotai'
 import { movieService } from '../services'
 import type { Movie } from '../types/movie'
 import { MovieRow } from '../components/movie/MovieRow'
+import { ContinueWatchingRow } from '../components/movie/ContinueWatchingRow'
 import { Header } from '../components/header/Header'
 import { HeroSection } from '../components/hero/HeroSection'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
@@ -12,20 +13,16 @@ import { HeroSkeleton, MovieRowSkeleton } from '../components/skeleton'
 import { selectedMovieAtom, selectedGenreAtom } from '../store/movies'
 import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
 import { useWatchHistoryPersistence } from '../hooks/useWatchHistoryPersistence'
-import { watchHistoryAtom } from '../store/watchHistory'
 
 export default function Home() {
-  const { user } = useUser()
   const [heroMovie, setHeroMovie] = useState<Movie | null>(null)
   const [popularMovies, setPopularMovies] = useState<Movie[]>([])
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([])
   const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([])
-  const [continueWatching, setContinueWatching] = useState<Movie[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const hasFetched = useRef(false)
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
-  const [watchHistory] = useAtom(watchHistoryAtom)
   const [selectedGenre] = useAtom(selectedGenreAtom)
 
   useFavoritesPersistence()
@@ -41,7 +38,6 @@ export default function Home() {
   const filteredPopularMovies = useMemo(() => filterByGenre(popularMovies), [popularMovies, selectedGenre])
   const filteredTrendingMovies = useMemo(() => filterByGenre(trendingMovies), [trendingMovies, selectedGenre])
   const filteredTopRatedMovies = useMemo(() => filterByGenre(topRatedMovies), [topRatedMovies, selectedGenre])
-  const filteredContinueWatching = useMemo(() => filterByGenre(continueWatching), [continueWatching, selectedGenre])
 
   useEffect(() => {
     if (hasFetched.current) return
@@ -74,33 +70,6 @@ export default function Home() {
 
     fetchMovies()
   }, [])
-
-  useEffect(() => {
-    if (!user?.id || watchHistory.length === 0) {
-      setContinueWatching([])
-      return
-    }
-
-    const loadContinueWatching = async () => {
-      try {
-        const incompleteHistory = watchHistory
-          .filter((item) => !item.completed && item.progress > 0)
-          .sort((a, b) => new Date(b.watchedAt).getTime() - new Date(a.watchedAt).getTime())
-          .slice(0, 10)
-
-        const moviePromises = incompleteHistory.map((item) =>
-          movieService.getMovieById(item.movieId)
-        )
-
-        const movies = await Promise.all(moviePromises)
-        setContinueWatching(movies.filter((movie): movie is Movie => movie !== null))
-      } catch (error) {
-        console.error('Failed to load continue watching:', error)
-      }
-    }
-
-    loadContinueWatching()
-  }, [watchHistory, user?.id])
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -150,13 +119,7 @@ export default function Home() {
               <HeroSection movie={heroMovie} />
 
               <div className="space-y-8 py-8 -mt-32 relative z-10">
-                {filteredContinueWatching.length > 0 && (
-                  <MovieRow
-                    title="Continue Watching"
-                    movies={filteredContinueWatching}
-                    onMovieClick={setSelectedMovie}
-                  />
-                )}
+                <ContinueWatchingRow />
                 <MovieRow
                   title="Popular on Netflix"
                   movies={filteredPopularMovies}

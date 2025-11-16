@@ -1,17 +1,77 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
+declare global {
+  interface Window {
+    YT: {
+      Player: new (
+        element: HTMLElement | string,
+        config: {
+          videoId: string
+          playerVars?: Record<string, number | string>
+          events?: {
+            onReady?: (event: { target: YTPlayer }) => void
+            onStateChange?: (event: { data: number }) => void
+            onError?: (event: { data: number }) => void
+          }
+        }
+      ) => YTPlayer
+      PlayerState: {
+        ENDED: number
+        PLAYING: number
+        PAUSED: number
+        BUFFERING: number
+        CUED: number
+      }
+    }
+    onYouTubeIframeAPIReady: () => void
+  }
+}
+
+interface YTPlayer {
+  destroy(): void
+  getCurrentTime(): number
+  getDuration(): number
+  playVideo(): void
+  pauseVideo(): void
+  seekTo(seconds: number, allowSeekAhead: boolean): void
+}
+
 type VideoPlayerProps = {
   src: string
   poster?: string
   title?: string
+  initialTime?: number
   onBack?: () => void
   onEnded?: () => void
+  onProgressUpdate?: (currentTime: number, duration: number) => void
 }
 
-export function VideoPlayer({ src, poster, title, onBack, onEnded }: VideoPlayerProps) {
+const getYouTubeVideoId = (url: string): string | null => {
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/
+  const match = url.match(regExp)
+  return match && match[7].length === 11 ? match[7] : null
+}
+
+export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, onProgressUpdate }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const youtubePlayerRef = useRef<YTPlayer | null>(null)
+  const youtubeDivRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const progressUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const progressPollingRef = useRef<NodeJS.Timeout | null>(null)
+  const lastSavedTimeRef = useRef<number>(0)
+
+  const onEndedRef = useRef(onEnded)
+  const onProgressUpdateRef = useRef(onProgressUpdate)
+
+  useEffect(() => {
+    onEndedRef.current = onEnded
+    onProgressUpdateRef.current = onProgressUpdate
+  }, [onEnded, onProgressUpdate])
+
+  const isYouTube = src.includes('youtube.com') || src.includes('youtu.be')
+  const youtubeVideoId = isYouTube ? getYouTubeVideoId(src) : null
 
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -35,17 +95,41 @@ export function VideoPlayer({ src, poster, title, onBack, onEnded }: VideoPlayer
 
   const handleTimeUpdate = useCallback(() => {
     if (!videoRef.current) return
-    setCurrentTime(videoRef.current.currentTime)
+    const currentVideoTime = videoRef.current.currentTime
+    const videoDuration = videoRef.current.duration
+
+    setCurrentTime(currentVideoTime)
 
     if (videoRef.current.buffered.length > 0) {
       setBuffered(videoRef.current.buffered.end(videoRef.current.buffered.length - 1))
     }
-  }, [])
+
+    if (onProgressUpdate && videoDuration > 0) {
+      const timeSinceLastSave = Math.abs(currentVideoTime - lastSavedTimeRef.current)
+
+      if (timeSinceLastSave >= 5) {
+        lastSavedTimeRef.current = currentVideoTime
+
+        if (progressUpdateTimeoutRef.current) {
+          clearTimeout(progressUpdateTimeoutRef.current)
+        }
+
+        progressUpdateTimeoutRef.current = setTimeout(() => {
+          onProgressUpdate(currentVideoTime, videoDuration)
+        }, 1000)
+      }
+    }
+  }, [onProgressUpdate])
 
   const handleLoadedMetadata = useCallback(() => {
     if (!videoRef.current) return
     setDuration(videoRef.current.duration)
-  }, [])
+
+    if (initialTime && initialTime > 0) {
+      videoRef.current.currentTime = initialTime
+      setCurrentTime(initialTime)
+    }
+  }, [initialTime])
 
   const handleSeek = useCallback((time: number) => {
     if (!videoRef.current) return
@@ -160,9 +244,101 @@ export function VideoPlayer({ src, poster, title, onBack, onEnded }: VideoPlayer
   }, [])
 
   useEffect(() => {
+    if (!isYouTube || !youtubeVideoId || !youtubeDivRef.current) return
+
+    if (youtubePlayerRef.current) {
+      youtubePlayerRef.current.destroy()
+      youtubePlayerRef.current = null
+    }
+
+    if (progressPollingRef.current) {
+      clearTimeout(progressPollingRef.current)
+      progressPollingRef.current = null
+    }
+
+    const initializePlayer = () => {
+      if (!window.YT || !window.YT.Player) {
+        setTimeout(initializePlayer, 100)
+        return
+      }
+
+      youtubePlayerRef.current = new window.YT.Player(youtubeDivRef.current!, {
+        videoId: youtubeVideoId,
+        playerVars: {
+          autoplay: 1,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0,
+          start: Math.floor(initialTime || 0),
+        },
+        events: {
+          onReady: (event) => {
+            const player = event.target
+
+            setTimeout(() => {
+              player.playVideo()
+            }, 500)
+
+            setTimeout(() => {
+              const duration = player.getDuration()
+              setDuration(duration)
+
+              const pollProgress = () => {
+                if (!youtubePlayerRef.current) return
+
+                const currentTime = youtubePlayerRef.current.getCurrentTime()
+                const duration = youtubePlayerRef.current.getDuration()
+
+                setCurrentTime(currentTime)
+
+                const timeSinceLastSave = Math.abs(currentTime - lastSavedTimeRef.current)
+                if (onProgressUpdateRef.current && duration > 0 && timeSinceLastSave >= 5) {
+                  lastSavedTimeRef.current = currentTime
+                  onProgressUpdateRef.current(currentTime, duration)
+                }
+
+                progressPollingRef.current = setTimeout(pollProgress, 1000)
+              }
+
+              pollProgress()
+            }, 1000)
+          },
+          onStateChange: (event) => {
+            if (event.data === window.YT.PlayerState.ENDED && onEndedRef.current) {
+              onEndedRef.current()
+            }
+          },
+          onError: (event: { data: number }) => {
+            console.error('YouTube Player error:', event.data)
+          },
+        },
+      })
+    }
+
+    initializePlayer()
+
+    return () => {
+      if (youtubePlayerRef.current) {
+        youtubePlayerRef.current.destroy()
+        youtubePlayerRef.current = null
+      }
+      if (progressPollingRef.current) {
+        clearTimeout(progressPollingRef.current)
+        progressPollingRef.current = null
+      }
+    }
+  }, [isYouTube, youtubeVideoId])
+
+  useEffect(() => {
     return () => {
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current)
+      }
+      if (progressUpdateTimeoutRef.current) {
+        clearTimeout(progressUpdateTimeoutRef.current)
+      }
+      if (progressPollingRef.current) {
+        clearTimeout(progressPollingRef.current)
       }
     }
   }, [])
@@ -188,23 +364,25 @@ export function VideoPlayer({ src, poster, title, onBack, onEnded }: VideoPlayer
       onMouseMove={resetControlsTimeout}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
-      <video
-        ref={videoRef}
-        src={src}
-        poster={poster}
-        className="w-full h-full"
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        onEnded={onEnded}
-        onClick={togglePlay}
-      />
+      {isYouTube && youtubeVideoId ? (
+        <div ref={youtubeDivRef} className="w-full h-full" />
+      ) : (
+        <video
+          ref={videoRef}
+          src={src}
+          poster={poster}
+          className="w-full h-full"
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={onEnded}
+          onClick={togglePlay}
+        />
+      )}
 
       {onBack && (
         <button
           onClick={onBack}
-          className={`absolute top-4 left-4 z-50 flex items-center gap-2 text-white hover:text-gray-300 transition-all ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="absolute top-4 left-4 z-50 flex items-center gap-2 text-white hover:text-gray-300 transition-all"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -213,33 +391,31 @@ export function VideoPlayer({ src, poster, title, onBack, onEnded }: VideoPlayer
       )}
 
       {title && (
-        <div
-          className={`absolute top-4 left-20 z-50 text-white text-xl font-semibold transition-all ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
+        <div className="absolute top-4 left-20 z-50 text-white text-xl font-semibold">
           {title}
         </div>
       )}
 
-      {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center z-30">
-          <button
-            onClick={togglePlay}
-            className="w-20 h-20 flex items-center justify-center bg-black/50 rounded-full hover:bg-black/70 transition-all"
-          >
-            <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </button>
-        </div>
-      )}
+      {!isYouTube && (
+        <>
+          {!isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center z-30">
+              <button
+                onClick={togglePlay}
+                className="w-20 h-20 flex items-center justify-center bg-black/50 rounded-full hover:bg-black/70 transition-all"
+              >
+                <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </button>
+            </div>
+          )}
 
-      <div
-        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent z-40 transition-all duration-300 ${
-          showControls ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
+          <div
+            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent z-40 transition-all duration-300 ${
+              showControls ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
         <div className="px-4 pb-2">
           <div className="relative group/progress">
             <div className="h-1 bg-gray-600 rounded-full overflow-hidden cursor-pointer">
@@ -337,6 +513,8 @@ export function VideoPlayer({ src, poster, title, onBack, onEnded }: VideoPlayer
           </div>
         </div>
       </div>
+        </>
+      )}
 
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-20" />
     </div>
