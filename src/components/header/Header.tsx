@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router'
-import { useSetAtom } from 'jotai'
+import { Link, useNavigate } from 'react-router'
+import { useSetAtom, useAtomValue } from 'jotai'
 import { UserButton } from '@clerk/clerk-react'
 import { SearchBar } from './SearchBar'
 import { MobileMenu } from './MobileMenu'
 import { isMobileMenuOpenAtom } from '../../store/ui'
+import { currentProfileAtom } from '../../store/profiles'
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
   const setMobileMenuOpen = useSetAtom(isMobileMenuOpenAtom)
+  const currentProfile = useAtomValue(currentProfileAtom)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +22,10 @@ export function Header() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const getProfileInitial = (name: string) => {
+    return name.charAt(0).toUpperCase()
+  }
 
   return (
     <>
@@ -75,6 +83,60 @@ export function Header() {
 
           <div className="flex items-center gap-2 md:gap-4">
             <SearchBar />
+
+            {currentProfile && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                  aria-label="Profile menu"
+                >
+                  <div
+                    className="w-8 h-8 rounded flex items-center justify-center text-white font-semibold text-sm"
+                    style={{ backgroundColor: currentProfile.avatar }}
+                  >
+                    {getProfileInitial(currentProfile.name)}
+                  </div>
+                  <svg
+                    className={`w-4 h-4 text-white transition-transform ${showProfileMenu ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-black/95 border border-gray-700 rounded shadow-lg z-50">
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false)
+                        navigate('/profiles')
+                      }}
+                      className="w-full text-left px-4 py-3 text-white hover:bg-gray-800 transition-colors text-sm"
+                    >
+                      Switch Profile
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false)
+                        navigate('/profiles/manage')
+                      }}
+                      className="w-full text-left px-4 py-3 text-white hover:bg-gray-800 transition-colors text-sm border-t border-gray-700"
+                    >
+                      Manage Profiles
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <UserButton afterSwitchSessionUrl="/login" />
           </div>
         </div>
