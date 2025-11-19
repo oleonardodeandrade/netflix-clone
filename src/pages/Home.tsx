@@ -13,6 +13,8 @@ import { HeroSkeleton, MovieRowSkeleton } from '../components/skeleton'
 import { selectedMovieAtom, selectedGenreAtom } from '../store/movies'
 import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
 import { useWatchHistoryPersistence } from '../hooks/useWatchHistoryPersistence'
+import { useKidsMode } from '../hooks/useKidsMode'
+import { filterMoviesByProfile } from '../utils/kidsMode'
 
 export default function Home() {
   const [heroMovie, setHeroMovie] = useState<Movie | null>(null)
@@ -24,6 +26,7 @@ export default function Home() {
   const hasFetched = useRef(false)
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
   const [selectedGenre] = useAtom(selectedGenreAtom)
+  const { isKidsProfile } = useKidsMode()
 
   useFavoritesPersistence()
   useWatchHistoryPersistence()
@@ -35,9 +38,20 @@ export default function Home() {
     )
   }
 
-  const filteredPopularMovies = useMemo(() => filterByGenre(popularMovies), [popularMovies, selectedGenre])
-  const filteredTrendingMovies = useMemo(() => filterByGenre(trendingMovies), [trendingMovies, selectedGenre])
-  const filteredTopRatedMovies = useMemo(() => filterByGenre(topRatedMovies), [topRatedMovies, selectedGenre])
+  const filteredPopularMovies = useMemo(() => {
+    const genreFiltered = filterByGenre(popularMovies)
+    return filterMoviesByProfile(genreFiltered, isKidsProfile)
+  }, [popularMovies, selectedGenre, isKidsProfile])
+
+  const filteredTrendingMovies = useMemo(() => {
+    const genreFiltered = filterByGenre(trendingMovies)
+    return filterMoviesByProfile(genreFiltered, isKidsProfile)
+  }, [trendingMovies, selectedGenre, isKidsProfile])
+
+  const filteredTopRatedMovies = useMemo(() => {
+    const genreFiltered = filterByGenre(topRatedMovies)
+    return filterMoviesByProfile(genreFiltered, isKidsProfile)
+  }, [topRatedMovies, selectedGenre, isKidsProfile])
 
   useEffect(() => {
     if (hasFetched.current) return
