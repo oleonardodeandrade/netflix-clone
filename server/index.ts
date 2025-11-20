@@ -3,6 +3,7 @@ import cors from 'cors'
 import { favoritesRouter } from './routes/favorites'
 import { watchHistoryRouter } from './routes/watchHistory'
 import { ratingsRouter } from './routes/ratings'
+import { profilesRouter } from './routes/profiles'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -13,6 +14,7 @@ app.use(express.json())
 app.use('/api/favorites', favoritesRouter)
 app.use('/api/watch-history', watchHistoryRouter)
 app.use('/api/ratings', ratingsRouter)
+app.use('/api/profiles', profilesRouter)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
