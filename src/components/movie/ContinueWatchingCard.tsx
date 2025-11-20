@@ -36,7 +36,7 @@ export const ContinueWatchingCard = memo(function ContinueWatchingCard({
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation()
-    watchProgressStorage.removeProgress(movie.id)
+    watchProgressStorage.removeProgress(movie.id, watchProgress.profileId)
     onRemove?.()
   }
 
