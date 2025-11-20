@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import { useSetAtom } from 'jotai'
 import { movieService } from '../services'
@@ -10,6 +10,8 @@ import { MovieCard } from '../components/movie/MovieCard'
 import { MovieGridSkeleton } from '../components/skeleton'
 import { selectedMovieAtom } from '../store/movies'
 import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
+import { useKidsMode } from '../hooks/useKidsMode'
+import { filterMoviesByProfile } from '../utils/kidsMode'
 
 type SearchResults = {
   exact: Movie[]
@@ -28,8 +30,15 @@ export default function SearchResults() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
+  const { isKidsProfile } = useKidsMode()
 
   useFavoritesPersistence()
+
+  const filteredResults = useMemo(() => ({
+    exact: filterMoviesByProfile(searchResults.exact, isKidsProfile),
+    similar: filterMoviesByProfile(searchResults.similar, isKidsProfile),
+    others: filterMoviesByProfile(searchResults.others, isKidsProfile),
+  }), [searchResults, isKidsProfile])
 
   useEffect(() => {
     if (!query.trim()) {
@@ -85,7 +94,7 @@ export default function SearchResults() {
             </div>
           )}
 
-          {!loading && !error && searchResults.exact.length === 0 && searchResults.similar.length === 0 && searchResults.others.length === 0 && query && (
+          {!loading && !error && filteredResults.exact.length === 0 && filteredResults.similar.length === 0 && filteredResults.others.length === 0 && query && (
             <div className="text-center py-20">
               <svg
                 className="w-20 h-20 mx-auto mb-4 text-gray-600"
@@ -109,13 +118,13 @@ export default function SearchResults() {
             </div>
           )}
 
-          {!loading && !error && (searchResults.exact.length > 0 || searchResults.similar.length > 0 || searchResults.others.length > 0) && (
+          {!loading && !error && (filteredResults.exact.length > 0 || filteredResults.similar.length > 0 || filteredResults.others.length > 0) && (
             <div className="space-y-12">
-              {searchResults.exact.length > 0 && (
+              {filteredResults.exact.length > 0 && (
                 <section>
                   <h2 className="text-2xl font-bold mb-6">Exact Matches</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {searchResults.exact.map((movie) => (
+                    {filteredResults.exact.map((movie) => (
                       <MovieCard
                         key={movie.id}
                         movie={movie}
@@ -126,11 +135,11 @@ export default function SearchResults() {
                 </section>
               )}
 
-              {searchResults.similar.length > 0 && (
+              {filteredResults.similar.length > 0 && (
                 <section>
                   <h2 className="text-2xl font-bold mb-6">Similar Titles</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {searchResults.similar.map((movie) => (
+                    {filteredResults.similar.map((movie) => (
                       <MovieCard
                         key={movie.id}
                         movie={movie}
@@ -141,11 +150,11 @@ export default function SearchResults() {
                 </section>
               )}
 
-              {searchResults.others.length > 0 && (
+              {filteredResults.others.length > 0 && (
                 <section>
                   <h2 className="text-2xl font-bold mb-6">Other Titles</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {searchResults.others.map((movie) => (
+                    {filteredResults.others.map((movie) => (
                       <MovieCard
                         key={movie.id}
                         movie={movie}

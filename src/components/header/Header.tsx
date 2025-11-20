@@ -56,10 +56,15 @@ export function Header() {
               </svg>
             </button>
 
-            <Link to="/">
+            <Link to="/" className="flex items-center gap-2">
               <h1 className="text-red-600 text-2xl md:text-3xl font-bold cursor-pointer">
                 NETFLIX
               </h1>
+              {currentProfile?.isKids && (
+                <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  KIDS
+                </span>
+              )}
             </Link>
 
             <div className="hidden md:flex items-center gap-4">
