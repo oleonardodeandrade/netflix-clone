@@ -1,4 +1,6 @@
-# Netflix Clone
+<div align="center">
+
+# 🎬 Netflix Clone
 
 A modern, full-stack Netflix clone built with React 19, TypeScript, and cutting-edge web technologies. Features real-time movie data, user authentication, personalized recommendations, and a pixel-perfect Netflix-inspired UI.
 
@@ -6,50 +8,92 @@ A modern, full-stack Netflix clone built with React 19, TypeScript, and cutting-
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)
 ![Vite](https://img.shields.io/badge/Vite-7.1-purple)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-cyan)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+**[🚀 Live Demo](https://netflix-clone-front-two.vercel.app)** · **[📝 Report Bug](https://github.com/oleonardodeandrade/netflix-clone/issues)** · **[✨ Request Feature](https://github.com/oleonardodeandrade/netflix-clone/issues)**
+
+</div>
+
+---
+
+## 📸 Screenshots
+
+### Home Page
+![Home Page](.github/screenshots/home.png)
+*Browse trending movies, personalized recommendations, and continue watching*
+
+### Profile Selector
+![Profile Selector](.github/screenshots/profiles.png)
+*Multi-profile support with custom avatars and Kids Mode*
+
+### Video Player
+![Video Player](.github/screenshots/player.png)
+*Full-screen video playback with custom controls*
+
+### Search Results
+![Search Results](.github/screenshots/search.png)
+*Real-time search with instant results*
 
 ## ✨ Features
 
 ### Core Functionality
-- 🎬 **Movie Browsing** - Browse popular, trending, and top-rated movies
-- 🔍 **Advanced Search** - Search movies by title with real-time results
-- 🎭 **Genre Filtering** - Filter content by Action, Comedy, Drama, and more
-- ▶️ **Video Playback** - Watch movie trailers in full-screen mode
-- ⭐ **Rating System** - Rate movies with a 5-star rating system
-- ❤️ **My List** - Save favorite movies to your personal list
-- 📺 **Continue Watching** - Resume watching from where you left off
-- 📱 **Responsive Design** - Seamless experience across all devices
+
+| Feature | Description |
+|---------|------------|
+| 🎬 **Movie Browsing** | Browse popular, trending, and top-rated movies with smooth scrolling |
+| 👥 **Multi-Profile Support** | Create up to 5 profiles per account with custom avatars |
+| 👶 **Kids Mode** | Safe, age-appropriate content filtering for children |
+| 🔍 **Advanced Search** | Real-time search with instant results and autocomplete |
+| 🎭 **Genre Filtering** | Filter content by Action, Comedy, Drama, Horror, and more |
+| ▶️ **Video Playback** | Full-screen video player with custom controls |
+| ⭐ **Rating System** | Rate movies with a 5-star rating system |
+| ❤️ **My List** | Save favorite movies to your personal list |
+| 📺 **Continue Watching** | Resume watching from where you left off, per profile |
+| 📱 **Responsive Design** | Seamless experience across desktop, tablet, and mobile |
+| 🎨 **Skeleton Loading** | Elegant loading states for better UX |
 
 ### Technical Highlights
-- 🔐 **Authentication** - Secure user authentication with Clerk
-- 🗄️ **Database** - PostgreSQL with Drizzle ORM
-- 🎨 **UI/UX** - Netflix-inspired interface with smooth animations
-- 🚀 **Performance** - Optimized with lazy loading and code splitting
-- 🌐 **API Integration** - Real movie data from TMDB API
-- 💾 **State Management** - Efficient state management with Jotai
-- 🎯 **Type Safety** - Full TypeScript coverage
+
+| Technology | Purpose |
+|-----------|---------|
+| 🔐 **Clerk Authentication** | Secure user authentication and session management |
+| 🗄️ **PostgreSQL + Drizzle ORM** | Type-safe database operations with Prisma |
+| 🎨 **TailwindCSS** | Utility-first CSS with Netflix-inspired design system |
+| 🚀 **Performance Optimizations** | Lazy loading, code splitting, and memoization |
+| 🌐 **TMDB API Integration** | Real-time movie data and metadata |
+| 💾 **Jotai State Management** | Atomic state management for React |
+| 🎯 **Full TypeScript** | End-to-end type safety |
+| 📦 **Vite Build Tool** | Lightning-fast HMR and optimized builds |
 
 ## 🛠️ Tech Stack
 
+<table>
+<tr>
+<td width="50%" valign="top">
+
 ### Frontend
-- **React 19** - Latest React with concurrent features
-- **TypeScript** - Type-safe development
-- **Vite** - Lightning-fast build tool
-- **TailwindCSS** - Utility-first CSS framework
-- **Jotai** - Atomic state management
-- **React Router** - Client-side routing
-- **Video.js** - Professional video player
+- ⚛️ **React 19** - Concurrent features
+- 📘 **TypeScript** - Type safety
+- ⚡ **Vite** - Build tool & HMR
+- 🎨 **TailwindCSS** - Styling
+- 🧩 **Jotai** - State management
+- 🛣️ **React Router** - Routing
+- 📹 **Video.js** - Video player
+
+</td>
+<td width="50%" valign="top">
 
 ### Backend & Services
-- **Clerk** - Authentication and user management
-- **PostgreSQL** - Relational database
-- **Drizzle ORM** - Type-safe database toolkit
-- **TMDB API** - Movie data provider
-- **Hono** - Fast web framework for API routes
+- 🔐 **Clerk** - Authentication
+- 🗄️ **PostgreSQL** - Database
+- 🔧 **Drizzle ORM** - Type-safe ORM
+- 🎬 **TMDB API** - Movie data
+- 🚀 **Hono** - API framework
+- 🔄 **Express** - Backend server
 
-### Development Tools
-- **ESLint** - Code linting
-- **TypeScript** - Static type checking
-- **Vite** - Dev server and build tool
+</td>
+</tr>
+</table>
 
 ## 🚀 Getting Started
 
