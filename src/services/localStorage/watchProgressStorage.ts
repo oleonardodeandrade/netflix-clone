@@ -9,13 +9,14 @@ export interface WatchProgress {
   duration: number
   lastWatched: string
   completed: boolean
+  profileId: string
 }
 
 export const watchProgressStorage = {
-  getProgress(movieId: string): WatchProgress | null {
+  getProgress(movieId: string, profileId: string): WatchProgress | null {
     try {
       const allProgress = this.getAllProgress()
-      return allProgress.find((item) => item.movieId === movieId) || null
+      return allProgress.find((item) => item.movieId === movieId && item.profileId === profileId) || null
     } catch (error) {
       console.error('Failed to get watch progress from localStorage:', error)
       return null
@@ -32,11 +33,12 @@ export const watchProgressStorage = {
     }
   },
 
-  getContinueWatching(): WatchProgress[] {
+  getContinueWatching(profileId: string): WatchProgress[] {
     try {
       const allProgress = this.getAllProgress()
 
       const continueWatching = allProgress.filter((item) => {
+        if (item.profileId !== profileId) return false
         if (item.completed) return false
         const progressPercent = (item.progress / item.duration) * 100
         return progressPercent >= 5 && progressPercent < 95
@@ -56,11 +58,12 @@ export const watchProgressStorage = {
     movie: Movie,
     progress: number,
     duration: number,
+    profileId: string,
     completed: boolean = false
   ): void {
     try {
       const allProgress = this.getAllProgress()
-      const existingIndex = allProgress.findIndex((item) => item.movieId === movieId)
+      const existingIndex = allProgress.findIndex((item) => item.movieId === movieId && item.profileId === profileId)
 
       const watchProgress: WatchProgress = {
         movieId,
@@ -69,6 +72,7 @@ export const watchProgressStorage = {
         duration,
         lastWatched: new Date().toISOString(),
         completed,
+        profileId,
       }
 
       if (existingIndex >= 0) {
@@ -87,10 +91,10 @@ export const watchProgressStorage = {
     }
   },
 
-  removeProgress(movieId: string): void {
+  removeProgress(movieId: string, profileId: string): void {
     try {
       const allProgress = this.getAllProgress()
-      const filtered = allProgress.filter((item) => item.movieId !== movieId)
+      const filtered = allProgress.filter((item) => !(item.movieId === movieId && item.profileId === profileId))
       localStorage.setItem(WATCH_PROGRESS_KEY, JSON.stringify(filtered))
     } catch (error) {
       console.error('Failed to remove watch progress:', error)
