@@ -79,6 +79,10 @@ export const apiClient = {
   getUpcoming: async (page = 1): Promise<ApiResponse<ApiMovie>> => {
     return fetchAPI<ApiResponse<ApiMovie>>('/movie/upcoming', { page });
   },
+
+  getSimilarMovies: async (movieId: string | number, page = 1): Promise<ApiResponse<ApiMovie>> => {
+    return fetchAPI<ApiResponse<ApiMovie>>(`/movie/${movieId}/similar`, { page });
+  },
 };
 
 export const getImageUrl = (path: string | null, size: 'w200' | 'w300' | 'w500' | 'original' = 'w500'): string => {
