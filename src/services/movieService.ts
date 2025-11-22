@@ -10,4 +10,5 @@ export interface MovieService {
   getNowPlayingMovies(page?: number): Promise<PaginatedResponse<Movie>>;
   getTopRatedMovies(page?: number): Promise<PaginatedResponse<Movie>>;
   getUpcomingMovies(page?: number): Promise<PaginatedResponse<Movie>>;
+  getSimilarMovies(movieId: string, page?: number): Promise<PaginatedResponse<Movie>>;
 }
