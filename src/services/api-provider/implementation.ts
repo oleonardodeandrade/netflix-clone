@@ -57,6 +57,11 @@ export class MovieServiceImplementation implements MovieService {
     const response = await apiClient.getUpcoming(page);
     return mapPaginatedResponse(response, mapToMovie);
   }
+
+  async getSimilarMovies(movieId: string, page = 1): Promise<PaginatedResponse<Movie>> {
+    const response = await apiClient.getSimilarMovies(movieId, page);
+    return mapPaginatedResponse(response, mapToMovie);
+  }
 }
 
 export const movieService = new MovieServiceImplementation();
