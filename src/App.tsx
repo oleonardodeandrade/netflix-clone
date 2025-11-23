@@ -11,6 +11,7 @@ const SearchResults = lazy(() => import('./pages/SearchResults'))
 const Watch = lazy(() => import('./pages/Watch'))
 const ProfileSelector = lazy(() => import('./pages/ProfileSelector'))
 const ManageProfiles = lazy(() => import('./pages/ManageProfiles'))
+const AccountSettings = lazy(() => import('./pages/AccountSettings'))
 
 function App() {
   return (
@@ -80,6 +81,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ManageProfiles />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <AccountSettings />
             </ProtectedRoute>
           }
         />
