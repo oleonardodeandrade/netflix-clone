@@ -137,6 +137,15 @@ export function Header() {
                     >
                       Manage Profiles
                     </button>
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false)
+                        navigate('/account')
+                      }}
+                      className="w-full text-left px-4 py-3 text-white hover:bg-gray-800 transition-colors text-sm border-t border-gray-700"
+                    >
+                      Account Settings
+                    </button>
                   </div>
                 )}
               </div>

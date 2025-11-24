@@ -49,14 +49,14 @@ export function MobileMenu() {
             Home
           </Link>
           <Link
-            to="#"
+            to="/tv-shows"
             onClick={closeMenu}
             className="text-white hover:text-gray-300 transition-colors text-lg"
           >
             TV Shows
           </Link>
           <Link
-            to="#"
+            to="/movies"
             onClick={closeMenu}
             className="text-white hover:text-gray-300 transition-colors text-lg"
           >
@@ -69,6 +69,23 @@ export function MobileMenu() {
           >
             My List
           </Link>
+
+          <div className="border-t border-gray-800 pt-4 mt-4">
+            <Link
+              to="/profiles/manage"
+              onClick={closeMenu}
+              className="text-white hover:text-gray-300 transition-colors text-lg block"
+            >
+              Manage Profiles
+            </Link>
+            <Link
+              to="/account"
+              onClick={closeMenu}
+              className="text-white hover:text-gray-300 transition-colors text-lg block mt-4"
+            >
+              Account Settings
+            </Link>
+          </div>
         </nav>
       </div>
     </>
