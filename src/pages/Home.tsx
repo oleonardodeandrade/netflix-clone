@@ -5,6 +5,7 @@ import { movieService } from '../services'
 import type { Movie } from '../types/movie'
 import { MovieRow } from '../components/movie/MovieRow'
 import { ContinueWatchingRow } from '../components/movie/ContinueWatchingRow'
+import { Top10Row } from '../components/movie/Top10Row'
 import { Header } from '../components/header/Header'
 import { HeroSection } from '../components/hero/HeroSection'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
@@ -136,6 +137,8 @@ export default function Home() {
 
               <div className="space-y-8 py-8 -mt-32 relative z-10">
                 <ContinueWatchingRow />
+
+                <Top10Row onMovieClick={setSelectedMovie} />
 
                 {recommendations.map((row, index) => (
                   <MovieRow

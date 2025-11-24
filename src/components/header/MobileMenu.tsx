@@ -63,6 +63,13 @@ export function MobileMenu() {
             Movies
           </Link>
           <Link
+            to="/top10"
+            onClick={closeMenu}
+            className="text-white hover:text-gray-300 transition-colors text-lg"
+          >
+            Top 10
+          </Link>
+          <Link
             to="/my-list"
             onClick={closeMenu}
             className="text-white hover:text-gray-300 transition-colors text-lg"
