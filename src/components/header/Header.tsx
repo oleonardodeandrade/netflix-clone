@@ -80,6 +80,10 @@ export function Header() {
                 TV Shows
               </Link>
 
+              <Link to="/top10" className="text-white hover:text-gray-300 transition-colors text-sm font-medium cursor-pointer">
+                Top 10
+              </Link>
+
               <Link to="/my-list" className="text-white hover:text-gray-300 transition-colors text-sm font-medium cursor-pointer">
                 My List
               </Link>
