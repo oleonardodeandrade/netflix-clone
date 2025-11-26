@@ -7,6 +7,7 @@ export type Movie = {
   tags: string[];
   description?: string;
   episodes?: Episode[];
+  seasons?: Season[];
   rating: number;
   year: number;
   duration: string;
@@ -18,6 +19,19 @@ export type Movie = {
   isLeavingSoon?: boolean;
   hasNewSeason?: boolean;
   top10Rank?: number;
+  isTvShow?: boolean;
+  numberOfSeasons?: number;
+  numberOfEpisodes?: number;
+};
+
+export type Season = {
+  id: string;
+  seasonNumber: number;
+  name: string;
+  overview?: string;
+  posterUrl?: string;
+  episodeCount: number;
+  airDate?: string;
 };
 
 export type Episode = {
@@ -29,6 +43,8 @@ export type Episode = {
   description?: string;
   episodeNumber: number;
   seasonNumber: number;
+  runtime?: number;
+  airDate?: string;
 };
 
 export type Actor = {
