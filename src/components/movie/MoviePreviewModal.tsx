@@ -5,8 +5,11 @@ import { useUser } from '@clerk/clerk-react'
 import { selectedMovieAtom, favoriteMoviesAtom } from '../../store/movies'
 import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import { ratingsService } from '../../services/api/ratingsService'
+import { movieService } from '../../services'
 import { StarRating } from '../rating/StarRating'
 import { MaturityRating, QualityBadge } from '../badges'
+import { EpisodeList } from './EpisodeList'
+import type { Movie } from '../../types/movie'
 
 export function MoviePreviewModal() {
   const { user } = useUser()
@@ -15,8 +18,13 @@ export function MoviePreviewModal() {
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useToggleFavorite()
   const [userRating, setUserRating] = useState(0)
+  const [tvShowDetails, setTvShowDetails] = useState<Movie | null>(null)
+  const [loadingDetails, setLoadingDetails] = useState(false)
 
-  const onClose = () => setMovie(null)
+  const onClose = () => {
+    setMovie(null)
+    setTvShowDetails(null)
+  }
 
   const handlePlay = () => {
     if (!movie) return
@@ -32,13 +40,34 @@ export function MoviePreviewModal() {
       try {
         const rating = await ratingsService.getRating(user.id, movie.id)
         setUserRating(rating.rating)
-      } catch (error) {
+      } catch {
         setUserRating(0)
       }
     }
 
     loadRating()
   }, [movie, user?.id])
+
+  useEffect(() => {
+    if (!movie?.isTvShow) {
+      setTvShowDetails(null)
+      return
+    }
+
+    const loadTvShowDetails = async () => {
+      setLoadingDetails(true)
+      try {
+        const details = await movieService.getTvShowDetails(movie.id)
+        setTvShowDetails(details)
+      } catch {
+        setTvShowDetails(null)
+      } finally {
+        setLoadingDetails(false)
+      }
+    }
+
+    loadTvShowDetails()
+  }, [movie?.id, movie?.isTvShow])
 
   const handleFavoriteClick = async () => {
     if (!movie) return
@@ -245,42 +274,18 @@ export function MoviePreviewModal() {
             </div>
           </div>
 
-          {movie.episodes && movie.episodes.length > 0 && (
-            <div className="p-8 pt-0">
-              <h3 className="text-2xl font-bold mb-4">Episodes</h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {movie.episodes.map((episode) => (
-                  <div
-                    key={episode.id}
-                    className="bg-gray-800/50 rounded p-4 hover:bg-gray-800 transition-colors cursor-pointer"
-                  >
-                    <div className="flex gap-4">
-                      <div className="flex-shrink-0 w-32 h-18 bg-gray-700 rounded overflow-hidden">
-                        {episode.previewUrl && (
-                          <img
-                            src={episode.previewUrl}
-                            alt={episode.title}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <h4 className="font-semibold">
-                            {episode.episodeNumber}. {episode.title}
-                          </h4>
-                          <span className="text-sm text-gray-400">
-                            S{episode.seasonNumber}:E{episode.episodeNumber}
-                          </span>
-                        </div>
-                        {episode.description && (
-                          <p className="text-sm text-gray-400 line-clamp-2">
-                            {episode.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+          {movie.isTvShow && tvShowDetails?.seasons && tvShowDetails.seasons.length > 0 && (
+            <div className="px-8 pb-8">
+              <EpisodeList tvShowId={movie.id} seasons={tvShowDetails.seasons} />
+            </div>
+          )}
+
+          {loadingDetails && movie.isTvShow && (
+            <div className="px-8 pb-8">
+              <div className="space-y-3">
+                <div className="h-8 w-32 bg-zinc-800 rounded animate-pulse" />
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="bg-zinc-800/50 rounded h-24 animate-pulse" />
                 ))}
               </div>
             </div>

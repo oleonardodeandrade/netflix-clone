@@ -1,7 +1,7 @@
 import type { MovieService } from '../movieService';
-import type { Movie, PaginatedResponse } from '../../types/movie';
+import type { Movie, PaginatedResponse, Episode } from '../../types/movie';
 import { apiClient } from './client';
-import { mapToMovie, mapToMovieWithDetails, mapPaginatedResponse, getGenreId } from './adapter';
+import { mapToMovie, mapToMovieWithDetails, mapPaginatedResponse, getGenreId, mapToTvShow, mapToTvShowWithDetails, mapToEpisodes } from './adapter';
 
 export class MovieServiceImplementation implements MovieService {
   async getPopularMovies(page = 1): Promise<PaginatedResponse<Movie>> {
@@ -61,6 +61,31 @@ export class MovieServiceImplementation implements MovieService {
   async getSimilarMovies(movieId: string, page = 1): Promise<PaginatedResponse<Movie>> {
     const response = await apiClient.getSimilarMovies(movieId, page);
     return mapPaginatedResponse(response, mapToMovie);
+  }
+
+  async getPopularTvShows(page = 1): Promise<PaginatedResponse<Movie>> {
+    const response = await apiClient.getPopularTvShows(page);
+    return mapPaginatedResponse(response, mapToTvShow);
+  }
+
+  async getTrendingTvShows(timeWindow: 'day' | 'week' = 'week', page = 1): Promise<PaginatedResponse<Movie>> {
+    const response = await apiClient.getTrendingTvShows(timeWindow, page);
+    return mapPaginatedResponse(response, mapToTvShow);
+  }
+
+  async getTvShowDetails(tvId: string): Promise<Movie> {
+    const response = await apiClient.getTvShowDetails(tvId);
+    return mapToTvShowWithDetails(response);
+  }
+
+  async getTvSeasonEpisodes(tvId: string, seasonNumber: number): Promise<Episode[]> {
+    const response = await apiClient.getTvSeasonDetails(tvId, seasonNumber);
+    return mapToEpisodes(response, tvId);
+  }
+
+  async searchTvShows(query: string, page = 1): Promise<PaginatedResponse<Movie>> {
+    const response = await apiClient.searchTvShows(query, page);
+    return mapPaginatedResponse(response, mapToTvShow);
   }
 }
 

@@ -27,8 +27,8 @@ export default function TvShows() {
       setLoading(true)
       try {
         const [popular, trending] = await Promise.all([
-          movieService.getPopularMovies(),
-          movieService.getTrendingMovies(),
+          movieService.getPopularTvShows(),
+          movieService.getTrendingTvShows(),
         ])
 
         const allShows = [...popular.results, ...trending.results]
