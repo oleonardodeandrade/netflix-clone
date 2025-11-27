@@ -6,6 +6,7 @@ import { Header } from '../components/header/Header'
 import { Footer } from '../components/footer/Footer'
 import { profilesAtom } from '../store/profiles'
 import { useAccountSettings } from '../hooks/useAccountSettings'
+import { getAvatarUrl } from '../types/profile'
 
 type SettingsSection = 'account' | 'playback' | 'activity' | 'profiles'
 
@@ -137,8 +138,12 @@ export default function AccountSettings() {
                           className="flex items-center justify-between border-b border-gray-800 pb-4 last:border-0 last:pb-0"
                         >
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center text-2xl">
-                              {profile.avatar === 'default' ? '👤' : profile.avatar}
+                            <div className="w-12 h-12 rounded overflow-hidden bg-zinc-700">
+                              <img
+                                src={getAvatarUrl(profile.avatar)}
+                                alt={profile.name}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
                             <div>
                               <p className="font-semibold">{profile.name}</p>
