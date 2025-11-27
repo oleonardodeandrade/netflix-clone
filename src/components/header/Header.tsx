@@ -6,6 +6,7 @@ import { SearchBar } from './SearchBar'
 import { MobileMenu } from './MobileMenu'
 import { isMobileMenuOpenAtom } from '../../store/ui'
 import { currentProfileAtom } from '../../store/profiles'
+import { getAvatarUrl } from '../../types/profile'
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false)
@@ -22,10 +23,6 @@ export function Header() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
-  const getProfileInitial = (name: string) => {
-    return name.charAt(0).toUpperCase()
-  }
 
   return (
     <>
@@ -100,11 +97,12 @@ export function Header() {
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                   aria-label="Profile menu"
                 >
-                  <div
-                    className="w-8 h-8 rounded flex items-center justify-center text-white font-semibold text-sm"
-                    style={{ backgroundColor: currentProfile.avatar }}
-                  >
-                    {getProfileInitial(currentProfile.name)}
+                  <div className="w-8 h-8 rounded overflow-hidden bg-zinc-700">
+                    <img
+                      src={getAvatarUrl(currentProfile.avatar)}
+                      alt={currentProfile.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <svg
                     className={`w-4 h-4 text-white transition-transform ${showProfileMenu ? 'rotate-180' : ''}`}
