@@ -24,10 +24,26 @@ const GENRE_MAP: Record<number, string> = {
   37: 'western',
 };
 
+const LANGUAGE_MAP: Record<string, string> = {
+  en: 'English',
+  es: 'Spanish',
+  fr: 'French',
+  de: 'German',
+  it: 'Italian',
+  pt: 'Portuguese',
+  ja: 'Japanese',
+  ko: 'Korean',
+  zh: 'Chinese',
+  hi: 'Hindi',
+  ru: 'Russian',
+  ar: 'Arabic',
+};
+
 export const mapCastToActor = (cast: ApiCast): Actor => ({
   id: String(cast.id),
   fullName: cast.name,
   profileUrl: getImageUrl(cast.profile_path, 'w200'),
+  character: cast.character,
 });
 
 export const mapToMovie = (apiMovie: ApiMovie): Movie => {
@@ -79,6 +95,8 @@ export const mapToMovieWithDetails = (apiDetails: ApiMovieDetails): Movie => {
     ? apiDetails.credits.cast.slice(0, 10).map(mapCastToActor)
     : [];
 
+  const director = apiDetails.credits?.crew?.find(c => c.job === 'Director')?.name;
+
   const runtime = apiDetails.runtime
     ? `${apiDetails.runtime}min`
     : '120min';
@@ -89,12 +107,21 @@ export const mapToMovieWithDetails = (apiDetails: ApiMovieDetails): Movie => {
 
   const trailerUrl = getTrailerUrl(apiDetails);
 
+  const originalLanguage = LANGUAGE_MAP[apiDetails.original_language] || apiDetails.original_language?.toUpperCase();
+
+  const similar = apiDetails.similar?.results
+    ? apiDetails.similar.results.slice(0, 12).map(mapToMovie)
+    : [];
+
   return {
     ...baseMovie,
     cast,
+    director,
     duration: runtime,
     tags,
+    originalLanguage,
     previewUrl: trailerUrl || baseMovie.previewUrl,
+    similar,
   };
 };
 
@@ -179,6 +206,8 @@ export const mapToTvShowWithDetails = (apiDetails: ApiTvShowDetails): Movie => {
     ? apiDetails.credits.cast.slice(0, 10).map(mapCastToActor)
     : [];
 
+  const director = apiDetails.created_by?.[0]?.name;
+
   const runtime = apiDetails.episode_run_time?.[0]
     ? `${apiDetails.episode_run_time[0]}min/ep`
     : 'Series';
@@ -201,15 +230,24 @@ export const mapToTvShowWithDetails = (apiDetails: ApiTvShowDetails): Movie => {
 
   const trailerUrl = getTvTrailerUrl(apiDetails);
 
+  const originalLanguage = LANGUAGE_MAP[apiDetails.original_language] || apiDetails.original_language?.toUpperCase();
+
+  const similar = apiDetails.similar?.results
+    ? apiDetails.similar.results.slice(0, 12).map(mapToTvShow)
+    : [];
+
   return {
     ...baseTvShow,
     cast,
+    director,
     duration: runtime,
     tags,
     seasons,
+    originalLanguage,
     numberOfSeasons: apiDetails.number_of_seasons,
     numberOfEpisodes: apiDetails.number_of_episodes,
     previewUrl: trailerUrl || baseTvShow.previewUrl,
+    similar,
   };
 };
 
