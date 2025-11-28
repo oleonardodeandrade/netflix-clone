@@ -12,6 +12,8 @@ export type Movie = {
   year: number;
   duration: string;
   cast: Actor[];
+  director?: string;
+  originalLanguage?: string;
   maturityRating?: string;
   quality?: 'HD' | '4K' | 'HDR' | 'Ultra HD 4K';
   isNew?: boolean;
@@ -22,6 +24,7 @@ export type Movie = {
   isTvShow?: boolean;
   numberOfSeasons?: number;
   numberOfEpisodes?: number;
+  similar?: Movie[];
 };
 
 export type Season = {
@@ -51,6 +54,7 @@ export type Actor = {
   id: string;
   fullName: string;
   profileUrl: string;
+  character?: string;
 };
 
 export type Genre = 'comedy' | 'romance' | 'horror' | 'action' | 'drama' | 'thriller' | 'scifi' | 'all';
