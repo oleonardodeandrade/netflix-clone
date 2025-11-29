@@ -1,4 +1,4 @@
-import type { ApiMovie, ApiMovieDetails, ApiResponse, ApiGenresResponse } from '../../types/external-api/api';
+import type { ApiMovie, ApiMovieDetails, ApiResponse, ApiGenresResponse, ApiTvShow, ApiTvShowDetails, ApiSeasonDetails } from '../../types/external-api/api';
 
 const BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || 'https://api.themoviedb.org/3';
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -78,6 +78,32 @@ export const apiClient = {
 
   getUpcoming: async (page = 1): Promise<ApiResponse<ApiMovie>> => {
     return fetchAPI<ApiResponse<ApiMovie>>('/movie/upcoming', { page });
+  },
+
+  getSimilarMovies: async (movieId: string | number, page = 1): Promise<ApiResponse<ApiMovie>> => {
+    return fetchAPI<ApiResponse<ApiMovie>>(`/movie/${movieId}/similar`, { page });
+  },
+
+  getPopularTvShows: async (page = 1): Promise<ApiResponse<ApiTvShow>> => {
+    return fetchAPI<ApiResponse<ApiTvShow>>('/tv/popular', { page });
+  },
+
+  getTrendingTvShows: async (timeWindow: 'day' | 'week' = 'week', page = 1): Promise<ApiResponse<ApiTvShow>> => {
+    return fetchAPI<ApiResponse<ApiTvShow>>(`/trending/tv/${timeWindow}`, { page });
+  },
+
+  getTvShowDetails: async (tvId: string | number): Promise<ApiTvShowDetails> => {
+    return fetchAPI<ApiTvShowDetails>(`/tv/${tvId}`, {
+      append_to_response: 'credits,videos,similar',
+    });
+  },
+
+  getTvSeasonDetails: async (tvId: string | number, seasonNumber: number): Promise<ApiSeasonDetails> => {
+    return fetchAPI<ApiSeasonDetails>(`/tv/${tvId}/season/${seasonNumber}`);
+  },
+
+  searchTvShows: async (query: string, page = 1): Promise<ApiResponse<ApiTvShow>> => {
+    return fetchAPI<ApiResponse<ApiTvShow>>('/search/tv', { query, page });
   },
 };
 

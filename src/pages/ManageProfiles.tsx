@@ -4,8 +4,9 @@ import { useAtom } from 'jotai'
 import { useUser } from '@clerk/clerk-react'
 import { profilesAtom } from '../store/profiles'
 import { profilesService } from '../services'
-import { PROFILE_AVATARS, MAX_PROFILES_PER_ACCOUNT } from '../types/profile'
+import { MAX_PROFILES_PER_ACCOUNT, getAvatarUrl, DEFAULT_AVATAR } from '../types/profile'
 import type { Profile } from '../types/profile'
+import { AvatarPicker } from '../components/profile/AvatarPicker'
 
 export default function ManageProfiles() {
   const navigate = useNavigate()
@@ -15,7 +16,7 @@ export default function ManageProfiles() {
   const [isCreating, setIsCreating] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
-    avatar: 'default' as string,
+    avatar: DEFAULT_AVATAR.id,
     isKids: false,
   })
 
@@ -44,7 +45,7 @@ export default function ManageProfiles() {
       })
       setProfiles([...profiles, newProfile])
       setIsCreating(false)
-      setFormData({ name: '', avatar: 'default', isKids: false })
+      setFormData({ name: '', avatar: DEFAULT_AVATAR.id, isKids: false })
     } catch (error) {
       console.error('Error creating profile:', error)
       alert('Failed to create profile. Maximum 5 profiles per account.')
@@ -58,7 +59,7 @@ export default function ManageProfiles() {
       const updated = await profilesService.updateProfile(editingProfile.id, formData)
       setProfiles(profiles.map((p) => (p.id === updated.id ? updated : p)))
       setEditingProfile(null)
-      setFormData({ name: '', avatar: 'default', isKids: false })
+      setFormData({ name: '', avatar: DEFAULT_AVATAR.id, isKids: false })
     } catch (error) {
       console.error('Error updating profile:', error)
       alert('Failed to update profile')
@@ -95,28 +96,13 @@ export default function ManageProfiles() {
   const startCreating = () => {
     setIsCreating(true)
     setEditingProfile(null)
-    setFormData({ name: '', avatar: 'default', isKids: false })
+    setFormData({ name: '', avatar: DEFAULT_AVATAR.id, isKids: false })
   }
 
   const cancelEditing = () => {
     setEditingProfile(null)
     setIsCreating(false)
-    setFormData({ name: '', avatar: 'default', isKids: false })
-  }
-
-  const getAvatarColor = (avatar: string) => {
-    const colors = {
-      default: 'bg-blue-600',
-      avatar1: 'bg-red-600',
-      avatar2: 'bg-green-600',
-      avatar3: 'bg-yellow-600',
-      avatar4: 'bg-purple-600',
-      avatar5: 'bg-pink-600',
-      kids1: 'bg-orange-600',
-      kids2: 'bg-cyan-600',
-      kids3: 'bg-lime-600',
-    }
-    return colors[avatar as keyof typeof colors] || colors.default
+    setFormData({ name: '', avatar: DEFAULT_AVATAR.id, isKids: false })
   }
 
   return (
@@ -136,10 +122,14 @@ export default function ManageProfiles() {
           {profiles.map((profile) => (
             <div key={profile.id} className="flex flex-col items-center gap-4">
               <div
-                className={`w-32 h-32 rounded-md ${getAvatarColor(profile.avatar)} flex items-center justify-center text-5xl font-bold cursor-pointer hover:opacity-80 transition-opacity`}
+                className="w-32 h-32 rounded-md overflow-hidden cursor-pointer hover:ring-4 hover:ring-white transition-all bg-zinc-800"
                 onClick={() => startEditing(profile)}
               >
-                {profile.name[0].toUpperCase()}
+                <img
+                  src={getAvatarUrl(profile.avatar)}
+                  alt={profile.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="text-center">
                 <p className="text-lg mb-2">{profile.name}</p>
@@ -196,18 +186,12 @@ export default function ManageProfiles() {
               </div>
 
               <div>
-                <label className="block text-sm mb-4">Avatar Color</label>
-                <div className="grid grid-cols-5 gap-4">
-                  {PROFILE_AVATARS.map((avatar) => (
-                    <button
-                      key={avatar}
-                      onClick={() => setFormData({ ...formData, avatar })}
-                      className={`w-16 h-16 rounded-md ${getAvatarColor(avatar)} border-4 ${
-                        formData.avatar === avatar ? 'border-white' : 'border-transparent'
-                      } transition-all`}
-                    />
-                  ))}
-                </div>
+                <label className="block text-sm mb-4">Choose Avatar</label>
+                <AvatarPicker
+                  selectedAvatar={formData.avatar}
+                  onSelect={(avatar) => setFormData({ ...formData, avatar })}
+                  showKidsOnly={formData.isKids}
+                />
               </div>
 
               <div className="flex items-center gap-3">

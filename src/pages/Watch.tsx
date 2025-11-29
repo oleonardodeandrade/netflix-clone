@@ -1,15 +1,21 @@
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useEffect, useState } from 'react'
 import { movieService } from '../services'
-import type { Movie } from '../types/movie'
+import type { Movie, Episode } from '../types/movie'
 import { VideoPlayer } from '../components/video/VideoPlayer'
 import { useWatchProgress } from '../hooks/useWatchProgress'
 
 export default function Watch() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [movie, setMovie] = useState<Movie | null>(null)
+  const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const seasonNumber = searchParams.get('season')
+  const episodeNumber = searchParams.get('episode')
+  const isTvShow = seasonNumber !== null && episodeNumber !== null
 
   useEffect(() => {
     if (!id) {
@@ -17,20 +23,28 @@ export default function Watch() {
       return
     }
 
-    const fetchMovie = async () => {
+    const fetchContent = async () => {
       try {
-        const movieData = await movieService.getMovieDetails(id)
-        setMovie(movieData)
+        if (isTvShow) {
+          const tvShowData = await movieService.getTvShowDetails(id)
+          setMovie(tvShowData)
+          const episodes = await movieService.getTvSeasonEpisodes(id, Number(seasonNumber))
+          const episode = episodes.find(ep => ep.episodeNumber === Number(episodeNumber))
+          setCurrentEpisode(episode || null)
+        } else {
+          const movieData = await movieService.getMovieDetails(id)
+          setMovie(movieData)
+        }
       } catch (error) {
-        console.error('Error fetching movie:', error)
+        console.error('Error fetching content:', error)
         navigate('/')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchMovie()
-  }, [id, navigate])
+    fetchContent()
+  }, [id, navigate, isTvShow, seasonNumber, episodeNumber])
 
   const { progress, saveProgress } = useWatchProgress(id || '', movie || ({} as Movie))
 
@@ -58,13 +72,20 @@ export default function Watch() {
     return null
   }
 
+  const displayTitle = currentEpisode
+    ? `${movie.title} - S${seasonNumber}E${episodeNumber}: ${currentEpisode.title}`
+    : movie.title
+
+  const videoSrc = currentEpisode?.previewUrl || movie.previewUrl
+  const posterSrc = currentEpisode?.previewUrl || movie.backdropUrl
+
   return (
     <div className="min-h-screen bg-black">
       <div className="w-full h-screen">
         <VideoPlayer
-          src={movie.previewUrl}
-          poster={movie.backdropUrl}
-          title={movie.title}
+          src={videoSrc}
+          poster={posterSrc}
+          title={displayTitle}
           initialTime={progress?.progress || 0}
           onBack={handleBack}
           onEnded={handleEnded}

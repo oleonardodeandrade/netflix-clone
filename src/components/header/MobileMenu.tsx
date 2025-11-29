@@ -49,18 +49,32 @@ export function MobileMenu() {
             Home
           </Link>
           <Link
-            to="#"
+            to="/tv-shows"
             onClick={closeMenu}
             className="text-white hover:text-gray-300 transition-colors text-lg"
           >
             TV Shows
           </Link>
           <Link
-            to="#"
+            to="/movies"
             onClick={closeMenu}
             className="text-white hover:text-gray-300 transition-colors text-lg"
           >
             Movies
+          </Link>
+          <Link
+            to="/top10"
+            onClick={closeMenu}
+            className="text-white hover:text-gray-300 transition-colors text-lg"
+          >
+            Top 10
+          </Link>
+          <Link
+            to="/new-and-popular"
+            onClick={closeMenu}
+            className="text-white hover:text-gray-300 transition-colors text-lg"
+          >
+            New & Popular
           </Link>
           <Link
             to="/my-list"
@@ -69,6 +83,23 @@ export function MobileMenu() {
           >
             My List
           </Link>
+
+          <div className="border-t border-gray-800 pt-4 mt-4">
+            <Link
+              to="/profiles/manage"
+              onClick={closeMenu}
+              className="text-white hover:text-gray-300 transition-colors text-lg block"
+            >
+              Manage Profiles
+            </Link>
+            <Link
+              to="/account"
+              onClick={closeMenu}
+              className="text-white hover:text-gray-300 transition-colors text-lg block mt-4"
+            >
+              Account Settings
+            </Link>
+          </div>
         </nav>
       </div>
     </>

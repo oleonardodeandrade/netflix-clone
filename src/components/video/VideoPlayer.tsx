@@ -270,6 +270,7 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
           modestbranding: 1,
           rel: 0,
           start: Math.floor(initialTime || 0),
+          origin: window.location.origin,
         },
         events: {
           onReady: (event) => {

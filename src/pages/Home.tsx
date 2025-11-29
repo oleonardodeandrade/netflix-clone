@@ -5,6 +5,7 @@ import { movieService } from '../services'
 import type { Movie } from '../types/movie'
 import { MovieRow } from '../components/movie/MovieRow'
 import { ContinueWatchingRow } from '../components/movie/ContinueWatchingRow'
+import { Top10Row } from '../components/movie/Top10Row'
 import { Header } from '../components/header/Header'
 import { HeroSection } from '../components/hero/HeroSection'
 import { MoviePreviewModal } from '../components/movie/MoviePreviewModal'
@@ -14,6 +15,7 @@ import { selectedMovieAtom, selectedGenreAtom } from '../store/movies'
 import { useFavoritesPersistence } from '../hooks/useFavoritesPersistence'
 import { useWatchHistoryPersistence } from '../hooks/useWatchHistoryPersistence'
 import { useKidsMode } from '../hooks/useKidsMode'
+import { useRecommendations } from '../hooks/useRecommendations'
 import { filterMoviesByProfile } from '../utils/kidsMode'
 
 export default function Home() {
@@ -27,6 +29,7 @@ export default function Home() {
   const setSelectedMovie = useSetAtom(selectedMovieAtom)
   const [selectedGenre] = useAtom(selectedGenreAtom)
   const { isKidsProfile } = useKidsMode()
+  const { recommendations } = useRecommendations()
 
   useFavoritesPersistence()
   useWatchHistoryPersistence()
@@ -134,6 +137,18 @@ export default function Home() {
 
               <div className="space-y-8 py-8 -mt-32 relative z-10">
                 <ContinueWatchingRow />
+
+                <Top10Row onMovieClick={setSelectedMovie} />
+
+                {recommendations.map((row, index) => (
+                  <MovieRow
+                    key={index}
+                    title={row.title}
+                    movies={row.movies}
+                    onMovieClick={setSelectedMovie}
+                  />
+                ))}
+
                 <MovieRow
                   title="Popular on Netflix"
                   movies={filteredPopularMovies}

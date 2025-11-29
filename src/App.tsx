@@ -11,6 +11,9 @@ const SearchResults = lazy(() => import('./pages/SearchResults'))
 const Watch = lazy(() => import('./pages/Watch'))
 const ProfileSelector = lazy(() => import('./pages/ProfileSelector'))
 const ManageProfiles = lazy(() => import('./pages/ManageProfiles'))
+const AccountSettings = lazy(() => import('./pages/AccountSettings'))
+const Top10 = lazy(() => import('./pages/Top10'))
+const NewAndPopular = lazy(() => import('./pages/NewAndPopular'))
 
 function App() {
   return (
@@ -80,6 +83,30 @@ function App() {
           element={
             <ProtectedRoute>
               <ManageProfiles />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <AccountSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/top10"
+          element={
+            <ProtectedRoute>
+              <Top10 />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/new-and-popular"
+          element={
+            <ProtectedRoute>
+              <NewAndPopular />
             </ProtectedRoute>
           }
         />

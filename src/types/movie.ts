@@ -7,10 +7,13 @@ export type Movie = {
   tags: string[];
   description?: string;
   episodes?: Episode[];
+  seasons?: Season[];
   rating: number;
   year: number;
   duration: string;
   cast: Actor[];
+  director?: string;
+  originalLanguage?: string;
   maturityRating?: string;
   quality?: 'HD' | '4K' | 'HDR' | 'Ultra HD 4K';
   isNew?: boolean;
@@ -18,6 +21,20 @@ export type Movie = {
   isLeavingSoon?: boolean;
   hasNewSeason?: boolean;
   top10Rank?: number;
+  isTvShow?: boolean;
+  numberOfSeasons?: number;
+  numberOfEpisodes?: number;
+  similar?: Movie[];
+};
+
+export type Season = {
+  id: string;
+  seasonNumber: number;
+  name: string;
+  overview?: string;
+  posterUrl?: string;
+  episodeCount: number;
+  airDate?: string;
 };
 
 export type Episode = {
@@ -29,12 +46,15 @@ export type Episode = {
   description?: string;
   episodeNumber: number;
   seasonNumber: number;
+  runtime?: number;
+  airDate?: string;
 };
 
 export type Actor = {
   id: string;
   fullName: string;
   profileUrl: string;
+  character?: string;
 };
 
 export type Genre = 'comedy' | 'romance' | 'horror' | 'action' | 'drama' | 'thriller' | 'scifi' | 'all';

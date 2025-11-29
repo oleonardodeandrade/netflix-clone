@@ -5,6 +5,7 @@ import { useUser } from '@clerk/clerk-react'
 import { ProfileCard } from '../components/profile/ProfileCard'
 import { profilesAtom, currentProfileAtom, isProfilesLoadingAtom } from '../store/profiles'
 import { profilesService } from '../services'
+import { DEFAULT_AVATAR } from '../types/profile'
 
 export default function ProfileSelector() {
   const navigate = useNavigate()
@@ -26,7 +27,7 @@ export default function ProfileSelector() {
           const defaultProfile = await profilesService.createProfile({
             userId: user.id,
             name: user.firstName || user.username || 'User',
-            avatar: 'default',
+            avatar: DEFAULT_AVATAR.id,
             isKids: false,
           })
           setProfiles([defaultProfile])

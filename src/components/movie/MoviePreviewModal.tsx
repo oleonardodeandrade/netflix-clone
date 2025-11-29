@@ -5,8 +5,12 @@ import { useUser } from '@clerk/clerk-react'
 import { selectedMovieAtom, favoriteMoviesAtom } from '../../store/movies'
 import { useToggleFavorite } from '../../hooks/useToggleFavorite'
 import { ratingsService } from '../../services/api/ratingsService'
+import { movieService } from '../../services'
 import { StarRating } from '../rating/StarRating'
 import { MaturityRating, QualityBadge } from '../badges'
+import { EpisodeList } from './EpisodeList'
+import { MovieCard } from './MovieCard'
+import type { Movie } from '../../types/movie'
 
 export function MoviePreviewModal() {
   const { user } = useUser()
@@ -15,8 +19,13 @@ export function MoviePreviewModal() {
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useToggleFavorite()
   const [userRating, setUserRating] = useState(0)
+  const [fullDetails, setFullDetails] = useState<Movie | null>(null)
+  const [loadingDetails, setLoadingDetails] = useState(false)
 
-  const onClose = () => setMovie(null)
+  const onClose = () => {
+    setMovie(null)
+    setFullDetails(null)
+  }
 
   const handlePlay = () => {
     if (!movie) return
@@ -32,13 +41,36 @@ export function MoviePreviewModal() {
       try {
         const rating = await ratingsService.getRating(user.id, movie.id)
         setUserRating(rating.rating)
-      } catch (error) {
+      } catch {
         setUserRating(0)
       }
     }
 
     loadRating()
   }, [movie, user?.id])
+
+  useEffect(() => {
+    if (!movie) {
+      setFullDetails(null)
+      return
+    }
+
+    const loadDetails = async () => {
+      setLoadingDetails(true)
+      try {
+        const details = movie.isTvShow
+          ? await movieService.getTvShowDetails(movie.id)
+          : await movieService.getMovieDetails(movie.id)
+        setFullDetails(details)
+      } catch {
+        setFullDetails(null)
+      } finally {
+        setLoadingDetails(false)
+      }
+    }
+
+    loadDetails()
+  }, [movie?.id, movie?.isTvShow])
 
   const handleFavoriteClick = async () => {
     if (!movie) return
@@ -226,12 +258,19 @@ export function MoviePreviewModal() {
               </div>
             </div>
 
-            <div className="space-y-4 text-sm">
-              {movie.cast.length > 0 && (
+            <div className="space-y-3 text-sm">
+              {fullDetails?.director && (
+                <div>
+                  <span className="text-gray-400">Director: </span>
+                  <span className="text-white">{fullDetails.director}</span>
+                </div>
+              )}
+
+              {(fullDetails?.cast?.length ?? movie.cast.length) > 0 && (
                 <div>
                   <span className="text-gray-400">Cast: </span>
                   <span className="text-white">
-                    {movie.cast.slice(0, 4).map(actor => actor.fullName).join(', ')}
+                    {(fullDetails?.cast || movie.cast).slice(0, 4).map(actor => actor.fullName).join(', ')}
                   </span>
                 </div>
               )}
@@ -242,46 +281,71 @@ export function MoviePreviewModal() {
                   <span className="text-white">{movie.tags.join(', ')}</span>
                 </div>
               )}
+
+              {fullDetails?.originalLanguage && (
+                <div>
+                  <span className="text-gray-400">Audio: </span>
+                  <span className="text-white">{fullDetails.originalLanguage}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {movie.episodes && movie.episodes.length > 0 && (
-            <div className="p-8 pt-0">
-              <h3 className="text-2xl font-bold mb-4">Episodes</h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {movie.episodes.map((episode) => (
-                  <div
-                    key={episode.id}
-                    className="bg-gray-800/50 rounded p-4 hover:bg-gray-800 transition-colors cursor-pointer"
-                  >
-                    <div className="flex gap-4">
-                      <div className="flex-shrink-0 w-32 h-18 bg-gray-700 rounded overflow-hidden">
-                        {episode.previewUrl && (
-                          <img
-                            src={episode.previewUrl}
-                            alt={episode.title}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <h4 className="font-semibold">
-                            {episode.episodeNumber}. {episode.title}
-                          </h4>
-                          <span className="text-sm text-gray-400">
-                            S{episode.seasonNumber}:E{episode.episodeNumber}
-                          </span>
-                        </div>
-                        {episode.description && (
-                          <p className="text-sm text-gray-400 line-clamp-2">
-                            {episode.description}
-                          </p>
-                        )}
-                      </div>
+          {(fullDetails?.cast?.length ?? 0) > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Cast</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                {fullDetails?.cast.slice(0, 10).map((actor) => (
+                  <div key={actor.id} className="text-center">
+                    <div className="w-full aspect-square rounded-lg overflow-hidden bg-zinc-800 mb-2">
+                      <img
+                        src={actor.profileUrl}
+                        alt={actor.fullName}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
                     </div>
+                    <p className="text-white text-sm font-medium truncate">{actor.fullName}</p>
+                    {actor.character && (
+                      <p className="text-gray-400 text-xs truncate">{actor.character}</p>
+                    )}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {movie.isTvShow && fullDetails?.seasons && fullDetails.seasons.length > 0 && (
+            <EpisodeList tvShowId={movie.id} seasons={fullDetails.seasons} />
+          )}
+
+          {fullDetails?.similar && fullDetails.similar.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">More Like This</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {fullDetails.similar.slice(0, 12).map((similarMovie) => (
+                  <MovieCard
+                    key={similarMovie.id}
+                    movie={similarMovie}
+                    onClick={setMovie}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {loadingDetails && (
+            <div className="space-y-6">
+              <div>
+                <div className="h-6 w-24 bg-zinc-800 rounded animate-pulse mb-4" />
+                <div className="grid grid-cols-5 gap-4">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="space-y-2">
+                      <div className="aspect-square bg-zinc-800 rounded-lg animate-pulse" />
+                      <div className="h-3 bg-zinc-800 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
