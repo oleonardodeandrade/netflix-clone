@@ -70,6 +70,13 @@ export function MobileMenu() {
             Top 10
           </Link>
           <Link
+            to="/new-and-popular"
+            onClick={closeMenu}
+            className="text-white hover:text-gray-300 transition-colors text-lg"
+          >
+            New & Popular
+          </Link>
+          <Link
             to="/my-list"
             onClick={closeMenu}
             className="text-white hover:text-gray-300 transition-colors text-lg"
