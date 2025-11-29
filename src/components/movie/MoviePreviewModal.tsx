@@ -9,6 +9,7 @@ import { movieService } from '../../services'
 import { StarRating } from '../rating/StarRating'
 import { MaturityRating, QualityBadge } from '../badges'
 import { EpisodeList } from './EpisodeList'
+import { MovieCard } from './MovieCard'
 import type { Movie } from '../../types/movie'
 
 export function MoviePreviewModal() {
@@ -18,12 +19,12 @@ export function MoviePreviewModal() {
   const [favorites] = useAtom(favoriteMoviesAtom)
   const toggleFavorite = useToggleFavorite()
   const [userRating, setUserRating] = useState(0)
-  const [tvShowDetails, setTvShowDetails] = useState<Movie | null>(null)
+  const [fullDetails, setFullDetails] = useState<Movie | null>(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
 
   const onClose = () => {
     setMovie(null)
-    setTvShowDetails(null)
+    setFullDetails(null)
   }
 
   const handlePlay = () => {
@@ -49,24 +50,26 @@ export function MoviePreviewModal() {
   }, [movie, user?.id])
 
   useEffect(() => {
-    if (!movie?.isTvShow) {
-      setTvShowDetails(null)
+    if (!movie) {
+      setFullDetails(null)
       return
     }
 
-    const loadTvShowDetails = async () => {
+    const loadDetails = async () => {
       setLoadingDetails(true)
       try {
-        const details = await movieService.getTvShowDetails(movie.id)
-        setTvShowDetails(details)
+        const details = movie.isTvShow
+          ? await movieService.getTvShowDetails(movie.id)
+          : await movieService.getMovieDetails(movie.id)
+        setFullDetails(details)
       } catch {
-        setTvShowDetails(null)
+        setFullDetails(null)
       } finally {
         setLoadingDetails(false)
       }
     }
 
-    loadTvShowDetails()
+    loadDetails()
   }, [movie?.id, movie?.isTvShow])
 
   const handleFavoriteClick = async () => {
@@ -255,12 +258,19 @@ export function MoviePreviewModal() {
               </div>
             </div>
 
-            <div className="space-y-4 text-sm">
-              {movie.cast.length > 0 && (
+            <div className="space-y-3 text-sm">
+              {fullDetails?.director && (
+                <div>
+                  <span className="text-gray-400">Director: </span>
+                  <span className="text-white">{fullDetails.director}</span>
+                </div>
+              )}
+
+              {(fullDetails?.cast?.length ?? movie.cast.length) > 0 && (
                 <div>
                   <span className="text-gray-400">Cast: </span>
                   <span className="text-white">
-                    {movie.cast.slice(0, 4).map(actor => actor.fullName).join(', ')}
+                    {(fullDetails?.cast || movie.cast).slice(0, 4).map(actor => actor.fullName).join(', ')}
                   </span>
                 </div>
               )}
@@ -271,22 +281,71 @@ export function MoviePreviewModal() {
                   <span className="text-white">{movie.tags.join(', ')}</span>
                 </div>
               )}
+
+              {fullDetails?.originalLanguage && (
+                <div>
+                  <span className="text-gray-400">Audio: </span>
+                  <span className="text-white">{fullDetails.originalLanguage}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {movie.isTvShow && tvShowDetails?.seasons && tvShowDetails.seasons.length > 0 && (
-            <div className="px-8 pb-8">
-              <EpisodeList tvShowId={movie.id} seasons={tvShowDetails.seasons} />
+          {(fullDetails?.cast?.length ?? 0) > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Cast</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                {fullDetails?.cast.slice(0, 10).map((actor) => (
+                  <div key={actor.id} className="text-center">
+                    <div className="w-full aspect-square rounded-lg overflow-hidden bg-zinc-800 mb-2">
+                      <img
+                        src={actor.profileUrl}
+                        alt={actor.fullName}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <p className="text-white text-sm font-medium truncate">{actor.fullName}</p>
+                    {actor.character && (
+                      <p className="text-gray-400 text-xs truncate">{actor.character}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          {loadingDetails && movie.isTvShow && (
-            <div className="px-8 pb-8">
-              <div className="space-y-3">
-                <div className="h-8 w-32 bg-zinc-800 rounded animate-pulse" />
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-zinc-800/50 rounded h-24 animate-pulse" />
+          {movie.isTvShow && fullDetails?.seasons && fullDetails.seasons.length > 0 && (
+            <EpisodeList tvShowId={movie.id} seasons={fullDetails.seasons} />
+          )}
+
+          {fullDetails?.similar && fullDetails.similar.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">More Like This</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {fullDetails.similar.slice(0, 12).map((similarMovie) => (
+                  <MovieCard
+                    key={similarMovie.id}
+                    movie={similarMovie}
+                    onClick={setMovie}
+                  />
                 ))}
+              </div>
+            </div>
+          )}
+
+          {loadingDetails && (
+            <div className="space-y-6">
+              <div>
+                <div className="h-6 w-24 bg-zinc-800 rounded animate-pulse mb-4" />
+                <div className="grid grid-cols-5 gap-4">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="space-y-2">
+                      <div className="aspect-square bg-zinc-800 rounded-lg animate-pulse" />
+                      <div className="h-3 bg-zinc-800 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

@@ -15,11 +15,20 @@ export interface ApiMovie {
   video: boolean;
 }
 
+export interface ApiCrew {
+  id: number;
+  name: string;
+  job: string;
+  department: string;
+  profile_path: string | null;
+}
+
 export interface ApiMovieDetails extends ApiMovie {
   runtime: number;
   genres: { id: number; name: string }[];
   credits?: {
     cast: ApiCast[];
+    crew: ApiCrew[];
   };
   videos?: {
     results: ApiVideo[];
@@ -84,8 +93,10 @@ export interface ApiTvShowDetails extends ApiTvShow {
   seasons: ApiSeason[];
   episode_run_time: number[];
   genres: { id: number; name: string }[];
+  created_by?: { id: number; name: string }[];
   credits?: {
     cast: ApiCast[];
+    crew: ApiCrew[];
   };
   videos?: {
     results: ApiVideo[];
