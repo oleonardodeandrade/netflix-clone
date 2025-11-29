@@ -81,6 +81,10 @@ export function Header() {
                 Top 10
               </Link>
 
+              <Link to="/new-and-popular" className="text-white hover:text-gray-300 transition-colors text-sm font-medium cursor-pointer">
+                New & Popular
+              </Link>
+
               <Link to="/my-list" className="text-white hover:text-gray-300 transition-colors text-sm font-medium cursor-pointer">
                 My List
               </Link>
