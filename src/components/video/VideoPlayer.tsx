@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { SkipIntroButton } from './SkipIntroButton'
+import { NextEpisodeOverlay } from './NextEpisodeOverlay'
+import type { Episode } from '../../types/movie'
 
 declare global {
   interface Window {
@@ -40,10 +43,15 @@ type VideoPlayerProps = {
   src: string
   poster?: string
   title?: string
+  showTitle?: string
   initialTime?: number
   onBack?: () => void
   onEnded?: () => void
   onProgressUpdate?: (currentTime: number, duration: number) => void
+  introStartTime?: number
+  introEndTime?: number
+  nextEpisode?: Episode | null
+  onNextEpisode?: () => void
 }
 
 const getYouTubeVideoId = (url: string): string | null => {
@@ -52,7 +60,20 @@ const getYouTubeVideoId = (url: string): string | null => {
   return match && match[7].length === 11 ? match[7] : null
 }
 
-export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, onProgressUpdate }: VideoPlayerProps) {
+export function VideoPlayer({
+  src,
+  poster,
+  title,
+  showTitle,
+  initialTime,
+  onBack,
+  onEnded,
+  onProgressUpdate,
+  introStartTime = 0,
+  introEndTime = 0,
+  nextEpisode,
+  onNextEpisode,
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const youtubePlayerRef = useRef<YTPlayer | null>(null)
   const youtubeDivRef = useRef<HTMLDivElement>(null)
@@ -81,6 +102,9 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showControls, setShowControls] = useState(true)
   const [buffered, setBuffered] = useState(0)
+  const [showSkipIntro, setShowSkipIntro] = useState(false)
+  const [showNextEpisode, setShowNextEpisode] = useState(false)
+  const [skippedIntro, setSkippedIntro] = useState(false)
 
   const togglePlay = useCallback(() => {
     if (!videoRef.current) return
@@ -93,6 +117,25 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
     setIsPlaying(!isPlaying)
   }, [isPlaying])
 
+  const handleSkipIntro = useCallback(() => {
+    if (!videoRef.current || introEndTime <= 0) return
+    videoRef.current.currentTime = introEndTime
+    setCurrentTime(introEndTime)
+    setSkippedIntro(true)
+    setShowSkipIntro(false)
+  }, [introEndTime])
+
+  const handleNextEpisode = useCallback(() => {
+    if (onNextEpisode) {
+      setShowNextEpisode(false)
+      onNextEpisode()
+    }
+  }, [onNextEpisode])
+
+  const handleCancelNextEpisode = useCallback(() => {
+    setShowNextEpisode(false)
+  }, [])
+
   const handleTimeUpdate = useCallback(() => {
     if (!videoRef.current) return
     const currentVideoTime = videoRef.current.currentTime
@@ -102,6 +145,19 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
 
     if (videoRef.current.buffered.length > 0) {
       setBuffered(videoRef.current.buffered.end(videoRef.current.buffered.length - 1))
+    }
+
+    if (introEndTime > 0 && !skippedIntro) {
+      const shouldShowSkip = currentVideoTime >= introStartTime && currentVideoTime < introEndTime
+      setShowSkipIntro(shouldShowSkip)
+    }
+
+    if (nextEpisode && videoDuration > 0) {
+      const timeRemaining = videoDuration - currentVideoTime
+      const shouldShowNext = timeRemaining <= 30 && timeRemaining > 0
+      if (shouldShowNext && !showNextEpisode) {
+        setShowNextEpisode(true)
+      }
     }
 
     if (onProgressUpdate && videoDuration > 0) {
@@ -119,7 +175,7 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
         }, 1000)
       }
     }
-  }, [onProgressUpdate])
+  }, [onProgressUpdate, introStartTime, introEndTime, skippedIntro, nextEpisode, showNextEpisode])
 
   const handleLoadedMetadata = useCallback(() => {
     if (!videoRef.current) return
@@ -518,6 +574,20 @@ export function VideoPlayer({ src, poster, title, initialTime, onBack, onEnded, 
       )}
 
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-20" />
+
+      {!isYouTube && (
+        <SkipIntroButton visible={showSkipIntro} onClick={handleSkipIntro} />
+      )}
+
+      {!isYouTube && nextEpisode && (
+        <NextEpisodeOverlay
+          episode={nextEpisode}
+          showTitle={showTitle || title || ''}
+          visible={showNextEpisode}
+          onPlay={handleNextEpisode}
+          onCancel={handleCancelNextEpisode}
+        />
+      )}
     </div>
   )
 }
