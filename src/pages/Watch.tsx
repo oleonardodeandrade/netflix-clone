@@ -1,16 +1,20 @@
 import { useNavigate, useParams, useSearchParams } from 'react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { movieService } from '../services'
 import type { Movie, Episode } from '../types/movie'
 import { VideoPlayer } from '../components/video/VideoPlayer'
 import { useWatchProgress } from '../hooks/useWatchProgress'
 
+const INTRO_START_TIME = 0
+const INTRO_END_TIME = 30
+
 export default function Watch() {
   const { id } = useParams<{ id: string }>()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const [movie, setMovie] = useState<Movie | null>(null)
   const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null)
+  const [nextEpisode, setNextEpisode] = useState<Episode | null>(null)
   const [loading, setLoading] = useState(true)
 
   const seasonNumber = searchParams.get('season')
@@ -31,6 +35,10 @@ export default function Watch() {
           const episodes = await movieService.getTvSeasonEpisodes(id, Number(seasonNumber))
           const episode = episodes.find(ep => ep.episodeNumber === Number(episodeNumber))
           setCurrentEpisode(episode || null)
+
+          const currentEpNum = Number(episodeNumber)
+          const next = episodes.find(ep => ep.episodeNumber === currentEpNum + 1)
+          setNextEpisode(next || null)
         } else {
           const movieData = await movieService.getMovieDetails(id)
           setMovie(movieData)
@@ -64,6 +72,15 @@ export default function Watch() {
     }
   }
 
+  const handleNextEpisode = useCallback(() => {
+    if (nextEpisode && id) {
+      setSearchParams({
+        season: String(nextEpisode.seasonNumber),
+        episode: String(nextEpisode.episodeNumber),
+      })
+    }
+  }, [nextEpisode, id, setSearchParams])
+
   if (loading) {
     return <div className="min-h-screen bg-black" />
   }
@@ -86,10 +103,15 @@ export default function Watch() {
           src={videoSrc}
           poster={posterSrc}
           title={displayTitle}
+          showTitle={movie.title}
           initialTime={progress?.progress || 0}
           onBack={handleBack}
           onEnded={handleEnded}
           onProgressUpdate={handleProgressUpdate}
+          introStartTime={isTvShow ? INTRO_START_TIME : undefined}
+          introEndTime={isTvShow ? INTRO_END_TIME : undefined}
+          nextEpisode={nextEpisode}
+          onNextEpisode={handleNextEpisode}
         />
       </div>
     </div>
